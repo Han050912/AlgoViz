@@ -134,32 +134,32 @@
   background-color: #111827 !important;
 }
 
-/* ========== Select 选中项文字颜色主题适配 ========== */
-/* 浅色模式：选中值文字黑色，确保在白底上可读 */
-[data-theme='light'] .ant-select-selection-item {
-  color: #222222 !important;
+/* ========== Select 选中项文字颜色主题适配（限定认证表单作用域） ========== */
+/* 浅色模式：选中值文字深色，确保在白底上可读 */
+[data-theme='light'] .auth-form .ant-select-selection-item {
+  color: var(--color-auth-text-primary) !important;
 }
 
-[data-theme='light'] .ant-select-selection-placeholder {
-  color: #B0B0B0 !important;
+[data-theme='light'] .auth-form .ant-select-selection-placeholder {
+  color: var(--color-auth-placeholder-light) !important;
 }
 
 /* 深色模式：选中值文字浅色，确保在深底上可读 */
-[data-theme='dark'] .ant-select-selection-item {
-  color: #E0E0E0 !important;
+[data-theme='dark'] .auth-form .ant-select-selection-item {
+  color: var(--color-text-primary) !important;
 }
 
-[data-theme='dark'] .ant-select-selection-placeholder {
-  color: #9CA3AF !important;
+[data-theme='dark'] .auth-form .ant-select-selection-placeholder {
+  color: var(--color-text-tertiary) !important;
 }
 
-/* Select 下拉箭头图标主题适配 */
-[data-theme='light'] .ant-select-arrow {
-  color: #888888 !important;
+/* Select 下拉箭头图标主题适配（限定认证表单作用域） */
+[data-theme='light'] .auth-form .ant-select-arrow {
+  color: var(--color-auth-text-tertiary) !important;
 }
 
-[data-theme='dark'] .ant-select-arrow {
-  color: #9CA3AF !important;
+[data-theme='dark'] .auth-form .ant-select-arrow {
+  color: var(--color-text-tertiary) !important;
 }
 
 /* ========== Input Group compact 边框与背景主题适配 ========== */
@@ -171,9 +171,12 @@
   color: var(--color-auth-text-primary) !important;
 }
 
+/* 统一占位文字颜色：compact 组 + 普通输入框共享同一变量 */
 [data-theme='light'] .ant-input-group-compact .ant-input::placeholder,
-[data-theme='light'] .ant-input-group-compact > .ant-input-wrapper .ant-input-affix-wrapper::placeholder {
-  color: #B0B0B0 !important;
+[data-theme='light'] .ant-input-group-compact > .ant-input-wrapper .ant-input-affix-wrapper::placeholder,
+[data-theme='light'] .ant-input::placeholder,
+[data-theme='light'] .ant-input-affix-wrapper::placeholder {
+  color: var(--color-auth-placeholder-light) !important;
 }
 
 [data-theme='light'] .ant-input-group-compact .ant-select .ant-select-selector {
@@ -189,9 +192,12 @@
   color: #E0E0E0 !important;
 }
 
+/* 统一占位文字颜色：compact 组 + 普通输入框共享同一变量 */
 [data-theme='dark'] .ant-input-group-compact .ant-input::placeholder,
-[data-theme='dark'] .ant-input-group-compact > .ant-input-wrapper .ant-input-affix-wrapper::placeholder {
-  color: #E0E0E0 !important;
+[data-theme='dark'] .ant-input-group-compact > .ant-input-wrapper .ant-input-affix-wrapper::placeholder,
+[data-theme='dark'] .ant-input::placeholder,
+[data-theme='dark'] .ant-input-affix-wrapper::placeholder {
+  color: var(--color-text-primary) !important;
 }
 
 [data-theme='dark'] .ant-input-group-compact .ant-select .ant-select-selector {
@@ -199,60 +205,15 @@
   border-color: #374151 !important;
 }
 
-/* ========== 通用输入框主题适配（Icon 前缀 + 占位文字） ========== */
-/* 浅色模式：输入框纯白背景，占位文字浅灰 */
+/* ========== 通用输入框图标前缀主题适配 ========== */
+/* 浅色模式：图标前缀灰色 */
 [data-theme='light'] .ant-input-affix-wrapper .ant-input-prefix {
-  color: #888888;
+  color: var(--color-auth-text-tertiary);
 }
 
-[data-theme='light'] .ant-input-affix-wrapper::placeholder {
-  color: #B0B0B0 !important;
-}
-
-/* 浅色模式：普通 Input（非 AffixWrapper）占位文字 */
-[data-theme='light'] .ant-input::placeholder {
-  color: #B0B0B0 !important;
-}
-
-/* 深色模式：输入框深灰背景，图标 + 占位浅灰白 */
+/* 深色模式：图标前缀浅色 */
 [data-theme='dark'] .ant-input-affix-wrapper .ant-input-prefix {
   color: #E0E0E0;
-}
-
-[data-theme='dark'] .ant-input-affix-wrapper::placeholder {
-  color: #E0E0E0 !important;
-}
-
-/* 深色模式：普通 Input（非 AffixWrapper）占位文字 */
-[data-theme='dark'] .ant-input::placeholder {
-  color: #E0E0E0 !important;
-}
-
-/* ========== 注册页输入框占位文字专属样式 ========== */
-/* 浅色模式：浅灰色占位文字 */
-.auth-input-light-placeholder::placeholder {
-  color: #B0B0B0 !important;
-}
-
-.auth-input-light-placeholder:-ms-input-placeholder {
-  color: #B0B0B0 !important;
-}
-
-.auth-input-light-placeholder::-ms-input-placeholder {
-  color: #B0B0B0 !important;
-}
-
-/* 深色模式：浅灰白色占位文字 + 图标 */
-.auth-input-dark-placeholder::placeholder {
-  color: #E0E0E0 !important;
-}
-
-.auth-input-dark-placeholder:-ms-input-placeholder {
-  color: #E0E0E0 !important;
-}
-
-.auth-input-dark-placeholder::-ms-input-placeholder {
-  color: #E0E0E0 !important;
 }
 
 /* ========== "发送验证码" 按钮固定暖金色 ========== */

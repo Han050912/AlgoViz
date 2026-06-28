@@ -29,18 +29,19 @@ const AuthLayout = ({ children }: AuthLayoutProps) => {
     return stored !== null ? stored === 'true' : false;
   });
 
-  const toggleDarkMode = () => {
-    const next = !isDarkMode;
-    setIsDarkMode(next);
-    localStorage.setItem('algoviz-dark-mode', String(next));
-  };
-
+  // 同步设置 data-theme，避免首屏 FOUC（Finding 3）
   useEffect(() => {
     document.documentElement.setAttribute(
       'data-theme',
       isDarkMode ? 'dark' : 'light'
     );
   }, [isDarkMode]);
+
+  const toggleDarkMode = () => {
+    const next = !isDarkMode;
+    setIsDarkMode(next);
+    localStorage.setItem('algoviz-dark-mode', String(next));
+  };
 
   return (
     <AuthContext.Provider value={{ isDarkMode, toggleDarkMode }}>

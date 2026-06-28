@@ -33,6 +33,7 @@ const RegisterPageContent = () => {
   const [loading, setLoading] = useState(false);
   const [captchaVerified, setCaptchaVerified] = useState(false);
   const [captchaChecking, setCaptchaChecking] = useState(true);
+  const [selectOpen, setSelectOpen] = useState(false);
   const [form] = Form.useForm<RegisterFormValues>();
 
   // 人机验证 3 秒模拟
@@ -80,8 +81,8 @@ const RegisterPageContent = () => {
     [form, navigate]
   );
 
-  const textColor = isDarkMode ? '#E0E0E0' : 'var(--color-auth-text-primary)';
-  const subColor = isDarkMode ? '#9CA3AF' : 'var(--color-auth-text-tertiary)';
+  const textColor = isDarkMode ? 'var(--color-text-primary)' : 'var(--color-auth-text-primary)';
+  const subColor = isDarkMode ? 'var(--color-text-tertiary)' : 'var(--color-auth-text-tertiary)';
 
   return (
     <>
@@ -127,9 +128,8 @@ const RegisterPageContent = () => {
                   borderRadius: '8px 0 0 8px',
                   background: isDarkMode ? 'var(--color-auth-bg-input-dark)' : '#fff',
                   borderColor: 'var(--color-auth-border)',
-                  color: isDarkMode ? '#E0E0E0' : 'var(--color-auth-text-primary)',
+                  color: isDarkMode ? 'var(--color-text-primary)' : 'var(--color-auth-text-primary)',
                 }}
-                className={isDarkMode ? 'auth-input-dark-placeholder' : 'auth-input-light-placeholder'}
               />
             </Form.Item>
             <Form.Item name="emailDomain" noStyle>
@@ -137,12 +137,13 @@ const RegisterPageContent = () => {
                 showSearch
                 options={domainOptions.map((d) => ({ value: d, label: '@' + d }))}
                 dropdownClassName={isDarkMode ? 'auth-select-dropdown-dark' : 'auth-select-dropdown-light'}
+                open={selectOpen}
+                onOpenChange={setSelectOpen}
                 style={{
                   width: '45%',
                   height: 42,
                   borderRadius: '0 8px 8px 0',
                   background: isDarkMode ? 'var(--color-auth-bg-input-dark)' : '#fff',
-                  color: isDarkMode ? '#E0E0E0' : '#222222',
                 }}
               />
             </Form.Item>
@@ -158,7 +159,6 @@ const RegisterPageContent = () => {
           <Input.Password
             prefix={<LockOutlined />}
             placeholder="请输入密码"
-            className="auth-input-light-placeholder"
             style={{
               height: 42,
               borderRadius: 8,
@@ -189,7 +189,6 @@ const RegisterPageContent = () => {
           <Input.Password
             prefix={<LockOutlined />}
             placeholder="请再次输入密码"
-            className="auth-input-light-placeholder"
             style={{
               height: 42,
               borderRadius: 8,
@@ -248,7 +247,7 @@ const RegisterPageContent = () => {
                   : '验证失败'}
               </span>
             </div>
-            <span style={{ color: '#666', fontSize: 12 }}>Cloudflare</span>
+            <span style={{ color: '#9CA3AF', fontSize: 12 }}>Cloudflare</span>
           </div>
         </Form.Item>
 

@@ -104,8 +104,8 @@ const ForgotPasswordPageContent = () => {
     [navigate]
   );
 
-  const textColor = isDarkMode ? '#E0E0E0' : 'var(--color-auth-text-primary)';
-  const subColor = isDarkMode ? '#9CA3AF' : 'var(--color-auth-text-tertiary)';
+  const textColor = isDarkMode ? 'var(--color-text-primary)' : 'var(--color-auth-text-primary)';
+  const subColor = isDarkMode ? 'var(--color-text-tertiary)' : 'var(--color-auth-text-tertiary)';
 
   return (
     <>
@@ -139,7 +139,6 @@ const ForgotPasswordPageContent = () => {
           <Input
             prefix={<MailOutlined />}
             placeholder="请输入邮箱"
-            className="auth-input-light-placeholder"
             style={{
               height: 42,
               borderRadius: 8,
@@ -164,7 +163,6 @@ const ForgotPasswordPageContent = () => {
               <Input
                 prefix={<NumberOutlined />}
                 placeholder="请输入验证码"
-                className="auth-input-light-placeholder"
                 style={{
                   flex: 1,
                   height: 42,
@@ -204,7 +202,6 @@ const ForgotPasswordPageContent = () => {
           <Input.Password
             prefix={<LockOutlined />}
             placeholder="请输入新密码"
-            className="auth-input-light-placeholder"
             style={{
               height: 42,
               borderRadius: 8,
@@ -235,7 +232,6 @@ const ForgotPasswordPageContent = () => {
           <Input.Password
             prefix={<LockOutlined />}
             placeholder="请再次输入新密码"
-            className="auth-input-light-placeholder"
             style={{
               height: 42,
               borderRadius: 8,

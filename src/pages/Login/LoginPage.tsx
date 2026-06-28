@@ -59,8 +59,8 @@ const LoginPageContent = () => {
     }
   };
 
-  const textColor = isDarkMode ? '#E0E0E0' : 'var(--color-auth-text-primary)';
-  const subColor = isDarkMode ? '#9CA3AF' : 'var(--color-auth-text-tertiary)';
+  const textColor = isDarkMode ? 'var(--color-text-primary)' : 'var(--color-auth-text-primary)';
+  const subColor = isDarkMode ? 'var(--color-text-tertiary)' : 'var(--color-auth-text-tertiary)';
 
   return (
     <>
@@ -105,7 +105,6 @@ const LoginPageContent = () => {
           <Input
             prefix={<MailOutlined />}
             placeholder="请输入邮箱"
-            className="auth-input-light-placeholder"
             style={{
               height: 42,
               borderRadius: 8,
@@ -124,7 +123,6 @@ const LoginPageContent = () => {
           <Input.Password
             prefix={<LockOutlined />}
             placeholder="请输入密码"
-            className="auth-input-light-placeholder"
             style={{
               height: 42,
               borderRadius: 8,
