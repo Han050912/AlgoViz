@@ -142,7 +142,7 @@ const RegisterPageContent = () => {
                   height: 42,
                   borderRadius: '0 8px 8px 0',
                   background: isDarkMode ? 'var(--color-auth-bg-input-dark)' : '#fff',
-                  color: isDarkMode ? '#E0E0E0' : undefined,
+                  color: isDarkMode ? '#E0E0E0' : '#222222',
                 }}
               />
             </Form.Item>
@@ -158,6 +158,7 @@ const RegisterPageContent = () => {
           <Input.Password
             prefix={<LockOutlined />}
             placeholder="请输入密码"
+            className="auth-input-light-placeholder"
             style={{
               height: 42,
               borderRadius: 8,
@@ -188,6 +189,7 @@ const RegisterPageContent = () => {
           <Input.Password
             prefix={<LockOutlined />}
             placeholder="请再次输入密码"
+            className="auth-input-light-placeholder"
             style={{
               height: 42,
               borderRadius: 8,

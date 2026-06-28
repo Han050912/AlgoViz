@@ -139,6 +139,7 @@ const ForgotPasswordPageContent = () => {
           <Input
             prefix={<MailOutlined />}
             placeholder="请输入邮箱"
+            className="auth-input-light-placeholder"
             style={{
               height: 42,
               borderRadius: 8,
@@ -163,6 +164,7 @@ const ForgotPasswordPageContent = () => {
               <Input
                 prefix={<NumberOutlined />}
                 placeholder="请输入验证码"
+                className="auth-input-light-placeholder"
                 style={{
                   flex: 1,
                   height: 42,
@@ -202,6 +204,7 @@ const ForgotPasswordPageContent = () => {
           <Input.Password
             prefix={<LockOutlined />}
             placeholder="请输入新密码"
+            className="auth-input-light-placeholder"
             style={{
               height: 42,
               borderRadius: 8,
@@ -232,6 +235,7 @@ const ForgotPasswordPageContent = () => {
           <Input.Password
             prefix={<LockOutlined />}
             placeholder="请再次输入新密码"
+            className="auth-input-light-placeholder"
             style={{
               height: 42,
               borderRadius: 8,

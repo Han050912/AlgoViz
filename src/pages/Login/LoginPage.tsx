@@ -105,6 +105,7 @@ const LoginPageContent = () => {
           <Input
             prefix={<MailOutlined />}
             placeholder="请输入邮箱"
+            className="auth-input-light-placeholder"
             style={{
               height: 42,
               borderRadius: 8,
@@ -123,6 +124,7 @@ const LoginPageContent = () => {
           <Input.Password
             prefix={<LockOutlined />}
             placeholder="请输入密码"
+            className="auth-input-light-placeholder"
             style={{
               height: 42,
               borderRadius: 8,

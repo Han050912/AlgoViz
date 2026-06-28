@@ -134,6 +134,34 @@
   background-color: #111827 !important;
 }
 
+/* ========== Select 选中项文字颜色主题适配 ========== */
+/* 浅色模式：选中值文字黑色，确保在白底上可读 */
+[data-theme='light'] .ant-select-selection-item {
+  color: #222222 !important;
+}
+
+[data-theme='light'] .ant-select-selection-placeholder {
+  color: #B0B0B0 !important;
+}
+
+/* 深色模式：选中值文字浅色，确保在深底上可读 */
+[data-theme='dark'] .ant-select-selection-item {
+  color: #E0E0E0 !important;
+}
+
+[data-theme='dark'] .ant-select-selection-placeholder {
+  color: #9CA3AF !important;
+}
+
+/* Select 下拉箭头图标主题适配 */
+[data-theme='light'] .ant-select-arrow {
+  color: #888888 !important;
+}
+
+[data-theme='dark'] .ant-select-arrow {
+  color: #9CA3AF !important;
+}
+
 /* ========== Input Group compact 边框与背景主题适配 ========== */
 /* 浅色模式：输入框 + 下拉框均为白色背景 */
 [data-theme='light'] .ant-input-group-compact .ant-input,
@@ -181,12 +209,22 @@
   color: #B0B0B0 !important;
 }
 
+/* 浅色模式：普通 Input（非 AffixWrapper）占位文字 */
+[data-theme='light'] .ant-input::placeholder {
+  color: #B0B0B0 !important;
+}
+
 /* 深色模式：输入框深灰背景，图标 + 占位浅灰白 */
 [data-theme='dark'] .ant-input-affix-wrapper .ant-input-prefix {
   color: #E0E0E0;
 }
 
 [data-theme='dark'] .ant-input-affix-wrapper::placeholder {
+  color: #E0E0E0 !important;
+}
+
+/* 深色模式：普通 Input（非 AffixWrapper）占位文字 */
+[data-theme='dark'] .ant-input::placeholder {
   color: #E0E0E0 !important;
 }
 
