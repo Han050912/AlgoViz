@@ -1,0 +1,245 @@
+/* ========== Authentication Pages ========== */
+
+/* 认证页右侧面板响应式 */
+@media (max-width: 767px) {
+  .auth-right-panel {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* 验证码倒计时按钮禁用态 */
+.captcha-btn-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 认证页输入框 hover/focus */
+.auth-input:hover {
+  border-color: var(--color-brand-gold-light);
+}
+
+.auth-input:focus {
+  border-color: var(--color-brand-gold-light);
+  box-shadow: 0 0 0 2px rgba(212, 154, 32, 0.1);
+  outline: none;
+}
+
+/* 密码可见性切换图标 */
+.ant-input-password-icon {
+  color: var(--color-auth-text-tertiary);
+}
+
+.ant-input-password-icon:hover {
+  color: var(--color-auth-text-primary);
+}
+
+/* 表单 label 间距 */
+.auth-form .ant-form-item-label {
+  padding-bottom: 6px;
+}
+
+/* 按钮 hover 过渡 */
+.auth-form .ant-btn {
+  transition: all 0.2s ease;
+}
+
+/* ========== Checkbox 复选框主题适配 ========== */
+/* 浅色模式：白色背景 */
+[data-theme='light'] .ant-checkbox-wrapper {
+  color: var(--color-auth-text-primary);
+}
+
+[data-theme='light'] .ant-checkbox-inner {
+  background-color: #ffffff;
+  border: 1px solid var(--color-auth-border);
+}
+
+[data-theme='light'] .ant-checkbox-checked .ant-checkbox-inner {
+  background-color: #D49A20;
+  border-color: #D49A20;
+}
+
+[data-theme='light'] .ant-checkbox-input:focus + .ant-checkbox-inner,
+[data-theme='light'] .ant-checkbox-wrapper:hover .ant-checkbox-inner {
+  border-color: #D49A20;
+}
+
+/* 深色模式：黑色背景 */
+[data-theme='dark'] .ant-checkbox-inner {
+  background-color: #000000;
+  border: 1px solid #4B5563;
+}
+
+[data-theme='dark'] .ant-checkbox-checked .ant-checkbox-inner {
+  background-color: #D49A20;
+  border-color: #D49A20;
+}
+
+[data-theme='dark'] .ant-checkbox-input:focus + .ant-checkbox-inner {
+  border-color: #D49A20;
+}
+
+/* Checkbox 文字颜色 */
+.ant-checkbox-wrapper {
+  font-size: 14px;
+}
+
+/* ========== Select 下拉选择框主题适配 ========== */
+/* 浅色模式下拉菜单（Portal 渲染到 body，使用专属 class） */
+.auth-select-dropdown-light {
+  background-color: #ffffff !important;
+  border: 1px solid #D9D9D9 !important;
+  border-radius: 8px !important;
+}
+
+.auth-select-dropdown-light .ant-select-item {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+.auth-select-dropdown-light .ant-select-item-option {
+  color: #000000 !important;
+}
+
+.auth-select-dropdown-light .ant-select-item-option-selected {
+  background-color: rgba(212, 154, 32, 0.1) !important;
+  color: #D49A20 !important;
+  font-weight: 500;
+}
+
+.auth-select-dropdown-light .ant-select-item-option-active:not(.ant-select-item-option-selected) {
+  background-color: #F9FAFB !important;
+}
+
+/* 深色模式下拉菜单 */
+.auth-select-dropdown-dark {
+  background-color: #000000 !important;
+  border: 1px solid #374151 !important;
+  border-radius: 8px !important;
+}
+
+.auth-select-dropdown-dark .ant-select-item {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+.auth-select-dropdown-dark .ant-select-item-option-selected {
+  background-color: rgba(212, 154, 32, 0.15) !important;
+  color: #D49A20 !important;
+  font-weight: 500;
+}
+
+.auth-select-dropdown-dark .ant-select-item-option-active:not(.ant-select-item-option-selected) {
+  background-color: #111827 !important;
+}
+
+/* ========== Input Group compact 边框与背景主题适配 ========== */
+/* 浅色模式：输入框 + 下拉框均为白色背景 */
+[data-theme='light'] .ant-input-group-compact .ant-input,
+[data-theme='light'] .ant-input-group-compact > .ant-input-wrapper .ant-input-affix-wrapper {
+  background-color: #ffffff !important;
+  border-color: var(--color-auth-border) !important;
+  color: var(--color-auth-text-primary) !important;
+}
+
+[data-theme='light'] .ant-input-group-compact .ant-input::placeholder,
+[data-theme='light'] .ant-input-group-compact > .ant-input-wrapper .ant-input-affix-wrapper::placeholder {
+  color: #B0B0B0 !important;
+}
+
+[data-theme='light'] .ant-input-group-compact .ant-select .ant-select-selector {
+  background-color: #ffffff !important;
+  border-color: var(--color-auth-border) !important;
+}
+
+/* 深色模式：输入框深灰背景 */
+[data-theme='dark'] .ant-input-group-compact .ant-input,
+[data-theme='dark'] .ant-input-group-compact > .ant-input-wrapper .ant-input-affix-wrapper {
+  background-color: var(--color-auth-bg-input-dark) !important;
+  border-color: #374151 !important;
+  color: #E0E0E0 !important;
+}
+
+[data-theme='dark'] .ant-input-group-compact .ant-input::placeholder,
+[data-theme='dark'] .ant-input-group-compact > .ant-input-wrapper .ant-input-affix-wrapper::placeholder {
+  color: #E0E0E0 !important;
+}
+
+[data-theme='dark'] .ant-input-group-compact .ant-select .ant-select-selector {
+  background-color: var(--color-auth-bg-input-dark) !important;
+  border-color: #374151 !important;
+}
+
+/* ========== 通用输入框主题适配（Icon 前缀 + 占位文字） ========== */
+/* 浅色模式：输入框纯白背景，占位文字浅灰 */
+[data-theme='light'] .ant-input-affix-wrapper .ant-input-prefix {
+  color: #888888;
+}
+
+[data-theme='light'] .ant-input-affix-wrapper::placeholder {
+  color: #B0B0B0 !important;
+}
+
+/* 深色模式：输入框深灰背景，图标 + 占位浅灰白 */
+[data-theme='dark'] .ant-input-affix-wrapper .ant-input-prefix {
+  color: #E0E0E0;
+}
+
+[data-theme='dark'] .ant-input-affix-wrapper::placeholder {
+  color: #E0E0E0 !important;
+}
+
+/* ========== 注册页输入框占位文字专属样式 ========== */
+/* 浅色模式：浅灰色占位文字 */
+.auth-input-light-placeholder::placeholder {
+  color: #B0B0B0 !important;
+}
+
+.auth-input-light-placeholder:-ms-input-placeholder {
+  color: #B0B0B0 !important;
+}
+
+.auth-input-light-placeholder::-ms-input-placeholder {
+  color: #B0B0B0 !important;
+}
+
+/* 深色模式：浅灰白色占位文字 + 图标 */
+.auth-input-dark-placeholder::placeholder {
+  color: #E0E0E0 !important;
+}
+
+.auth-input-dark-placeholder:-ms-input-placeholder {
+  color: #E0E0E0 !important;
+}
+
+.auth-input-dark-placeholder::-ms-input-placeholder {
+  color: #E0E0E0 !important;
+}
+
+/* ========== "发送验证码" 按钮固定暖金色 ========== */
+.captcha-send-btn {
+  background-color: #D49A20 !important;
+  border-color: #D49A20 !important;
+  color: #ffffff !important;
+  transition: all 0.2s ease;
+}
+
+.captcha-send-btn:hover {
+  background-color: #BF8718 !important;
+  border-color: #BF8718 !important;
+  opacity: 0.9;
+}
+
+.captcha-send-btn:active {
+  background-color: #A66A14 !important;
+  border-color: #A66A14 !important;
+}
+
+.captcha-send-btn:disabled {
+  background-color: #D49A20 !important;
+  border-color: #D49A20 !important;
+  color: rgba(255, 255, 255, 0.65) !important;
+  opacity: 0.6;
+  cursor: not-allowed;
+}

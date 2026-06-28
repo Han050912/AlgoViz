@@ -1,0 +1,149 @@
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ========== CSS Custom Properties ========== */
+:root {
+  /* 娣辫壊涓婚涓昏壊绯?*/
+  --color-bg-page: #030712;
+  --color-bg-surface: #1F2937;
+  --color-bg-surface-hover: #374151;
+  --color-bg-elevated: #111827;
+
+  /* 鍝佺墝寮鸿皟鑹?*/
+  --color-brand-gold: #D49A20;
+  --color-brand-gold-hover: #BF8718;
+  --color-brand-gold-light: #B8860B;
+  --color-brand-violet: #6D28D9;
+  --color-brand-violet-hover: #5B21B6;
+
+  /* 鏂囧瓧鑹查樁 */
+  --color-text-primary: #F9FAFB;
+  --color-text-secondary: #D1D5DB;
+  --color-text-tertiary: #9CA3AF;
+  --color-text-inverse: #FFFFFF;
+
+  /* 杈规涓庡垎鍓茬嚎 */
+  --color-border: #374151;
+  --color-border-light: #4B5563;
+  --color-divider: #1F2937;
+
+  /* 鐘舵€佽壊 */
+  --color-success: #22C55E;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+  --color-info: #3B82F6;
+
+  /* 璁よ瘉椤甸潰涓撶敤 */
+  --color-auth-bg-right: #FFFFFF;
+  --color-auth-bg-right-dark: #1A1A2E;
+  --color-auth-text-primary: #222222;
+  --color-auth-text-secondary: #666666;
+  --color-auth-text-tertiary: #888888;
+  --color-auth-border: #D9D9D9;
+  --color-auth-placeholder-dark: #9CA3AF;
+  --color-auth-placeholder-light: #B0B0B0;
+  --color-auth-bg-input-dark: #2A2A3E;
+  --color-captcha-bg: #1A1A1A;
+
+  /* 鎺掔増 */
+  --font-sans: "Inter", "Microsoft YaHei", "寰蒋闆呴粦", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", "Consolas", monospace;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+}
+
+/* ========== Reset & Base ========== */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-page);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: var(--color-brand-gold-light);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--color-brand-gold);
+}
+
+/* ========== Placeholder text for auth inputs (both themes) ========== */
+/* Dark mode placeholder (default) */
+::placeholder {
+  color: var(--color-auth-placeholder-dark);
+  opacity: 1;
+}
+
+:-ms-input-placeholder {
+  color: var(--color-auth-placeholder-dark);
+}
+
+::-ms-input-placeholder {
+  color: var(--color-auth-placeholder-dark);
+}
+
+/* Light mode placeholder */
+[data-theme='light'] ::placeholder,
+[data-theme='light'] :-ms-input-placeholder,
+[data-theme='light'] ::-ms-input-placeholder {
+  color: var(--color-auth-placeholder-light);
+}
+
+/* ========== Ant Design overrides (base) ========== */
+.ant-btn-primary {
+  box-shadow: none;
+}
+
+.ant-input-affix-wrapper {
+  border-radius: var(--radius-md);
+}
+
+.ant-form-item {
+  margin-bottom: 20px;
+}
+
+.ant-form-item-label > label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* ========== Scrollbar ========== */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #4B5563;
+}
