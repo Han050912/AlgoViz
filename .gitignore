@@ -38,5 +38,9 @@ pnpm-debug.log*
 # Playwright MCP (session artifacts, logs)
 .playwright-mcp/
 
+# Claude Code
+.claude/
+CLAUDE.md
+
 # OS
 Thumbs.db
