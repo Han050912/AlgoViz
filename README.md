@@ -7,8 +7,13 @@
 [![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite)](https://vitejs.dev/)
 [![Ant Design](https://img.shields.io/badge/Ant_Design-5.22-0170FE?logo=ant-design)](https://ant.design/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-38B2AC?logo=tailwind-css)](https://tailwindcss.com/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
+[![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0-003B57?logo=python)](https://www.sqlalchemy.org/)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql)](https://www.mysql.com/)
 
 AlgoViz 是一个面向开发者、教师和算法学习者的可视化分析平台。用户编写或上传算法代码，平台通过 AI 模型分析代码执行过程，生成交互式的逐步骤执行轨迹可视化报告，包括变量状态变化、函数调用栈、复杂度分析和数据结构图形化展示。
+
+本项目采用前后端分离架构：前端基于 React 19 + TypeScript + Vite 6，后端基于 FastAPI + SQLAlchemy 2.0 (async) + MySQL 8.0。
 
 ## ✨ 核心功能
 
@@ -90,16 +95,19 @@ AlgoViz 是一个面向开发者、教师和算法学习者的可视化分析平
 | Markdown | marked | 18 | 分析报告中 Markdown 渲染 |
 | 字体 | Google Fonts (Inter) + JetBrains Mono / Fira Code | - | 排版 |
 
-### 后端（规划中）
+### 后端（已实现）
 
-| 类别 | 技术 | 用途 |
-|------|------|------|
-| 框架 | FastAPI 0.115 + SQLAlchemy 2.0 (async) | RESTful API + SSE 流式推送 |
-| 数据库 | MySQL 8.0 + aiomysql | 持久化存储 |
-| 任务队列 | Celery + Redis | 异步分析任务 |
-| 沙箱隔离 | Docker | 代码安全执行 |
-| 认证 | JWT + bcrypt(12) | 用户身份验证 |
-| 加密 | AES-256-GCM | API Key 加密存储 |
+| 类别 | 技术 | 用途 | 状态 |
+|------|------|------|------|
+| 框架 | FastAPI 0.115 + SQLAlchemy 2.0 (async) | RESTful API + SSE 流式推送 | ✅ |
+| 数据库 | MySQL 8.0 + aiomysql | 持久化存储（CHAR(36) UUID 主键） | ✅ |
+| 迁移 | Alembic | 数据库版本管理 | ✅ |
+| 任务队列 | Celery + Redis | 异步分析任务（预留） | ⏳ |
+| 沙箱隔离 | Docker | 代码安全执行（预留） | ⏳ |
+| 认证 | JWT + bcrypt(12) | 用户身份验证（access 30min + refresh 7d） | ✅ |
+| 加密 | AES-256-GCM | API Key 加密存储 | ✅ |
+| SSE | sse-starlette | 实时流式推送（trace + analysis chunks） | ✅ |
+| DI | FastAPI Depends | get_db, get_current_user 依赖注入 | ✅ |
 
 ### 部署
 
@@ -111,7 +119,49 @@ AlgoViz 是一个面向开发者、教师和算法学习者的可视化分析平
 
 ```
 AlgoViz/
-├── src/
+├── backend/                      # 后端源码
+│   ├── app/
+│   │   ├── main.py               # FastAPI 应用入口（CORS、路由注册、全局异常处理）
+│   │   ├── core/
+│   │   │   ├── config.py         # Pydantic Settings（读取 .env）
+│   │   │   ├── database.py       # SQLAlchemy async engine + session
+│   │   │   └── security.py       # JWT + bcrypt + AES-256-GCM
+│   │   ├── models/               # SQLAlchemy 数据模型（6 张表）
+│   │   │   ├── base.py           #   DeclarativeBase
+│   │   │   ├── user.py           #   用户（email 唯一）
+│   │   │   ├── api_config.py     #   AI 配置（AES 加密 API Key）
+│   │   │   ├── project.py        #   代码项目（SHA-256 哈希）
+│   │   │   ├── analysis.py       #   分析任务（status 枚举）
+│   │   │   ├── analysis_report.py #  分析报告（1:1 with analyses）
+│   │   │   └── execution_trace.py #  执行轨迹（1:1 with analyses）
+│   │   ├── schemas/              # Pydantic 请求/响应 schema
+│   │   │   ├── common.py         #   APIResponse<T> 统一响应
+│   │   │   ├── auth.py           #   注册/登录/刷新/重置 schema
+│   │   │   ├── config.py         #   AI 配置 CRUD schema
+│   │   │   └── project.py        #   项目 CRUD schema
+│   │   ├── api/
+│   │   │   ├── deps.py           # DI 依赖（get_db, get_current_user）
+│   │   │   └── v1/
+│   │   │       ├── auth.py       # 注册 / 登录 / 刷新 / 个人信息 / 密码重置
+│   │   │       ├── configs.py    # AI 配置 CRUD + 连接测试 + 设默认
+│   │   │       ├── projects.py   # 项目 CRUD + 收藏
+│   │   │       ├── analyses.py   # 分析 SSE 流式端点
+│   │   │       └── history.py    # 历史记录列表（分页 + 过滤）
+│   │   ├── services/
+│   │   │   ├── config_service.py # API 配置 CRUD + AES 加解密
+│   │   │   ├── project_service.py# 项目 CRUD + 分页
+│   │   │   ├── analysis_service.py # 分析流程编排
+│   │   │   ├── ai_service.py     # OpenAI SDK 封装 + 分析/追踪提示词
+│   │   │   ├── sandbox/          # Docker 沙箱（预留）
+│   │   │   └── tasks/            # Celery 异步任务（预留）
+│   ├── alembic/                  # 数据库迁移
+│   │   ├── env.py                # Alembic 环境配置（自动适配 async→sync URL）
+│   │   └── versions/             # 迁移脚本
+│   ├── tests/                    # 后端测试（pytest + httpx）
+│   ├── init.sql                  # 数据库初始化建表脚本
+│   ├── requirements.txt          # Python 依赖
+│   └── alembic.ini               # Alembic 配置
+├── src/                          # 前端源码（见下方）
 │   ├── components/                 # 可复用组件
 │   │   ├── AnalysisPanel/          # 复杂度分析面板
 │   │   │   ├── AnalysisPanel.tsx   #   分析报告 + 步骤解释
@@ -191,23 +241,86 @@ AlgoViz/
 
 ### 前置要求
 
-- Node.js >= 18
+- Node.js >= 20
 - npm >= 9（或使用 pnpm / yarn）
-- （后端）MySQL 8.0、Redis、Docker
+- Python >= 3.10
+- MySQL 8.0+
+- （可选）Docker + Redis — 用于沙箱执行和 Celery 异步任务
 
 ### 安装依赖
+
+#### 前端
 
 ```bash
 npm install
 ```
 
-### 启动开发服务器
+#### 后端
+
+```bash
+cd backend
+python -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+### 配置环境变量
+
+#### 后端
+
+在 `backend/` 目录下创建 `.env` 文件：
+
+```env
+DATABASE_URL=mysql+aiomysql://root:your_password@127.0.0.1:3306/algoviz_db?charset=utf8mb4
+SECRET_KEY=your-super-secret-key-change-in-production
+ENCRYPTION_KEY=your-base64-encoded-32-byte-key
+REDIS_URL=redis://localhost:6379/0
+CORS_ORIGINS=["http://localhost:5173"]
+```
+
+#### 前端
+
+在项目根目录创建 `.env` 文件：
+
+```env
+VITE_API_BASE_URL=http://localhost:8000/api/v1
+```
+
+### 初始化数据库
+
+```bash
+# 创建数据库
+mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS algoviz_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+# 导入建表脚本
+mysql -u root -p algoviz_db < backend/init.sql
+```
+
+### 数据库迁移 (Alembic)
+
+```bash
+cd backend
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+alembic upgrade head
+```
+
+### 启动后端
+
+```bash
+cd backend
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+后端将在 `http://localhost:8000` 启动，API 文档在 `http://localhost:8000/docs`。
+
+### 启动前端
 
 ```bash
 npm run dev
 ```
 
-访问 http://localhost:5173 即可看到应用。
+前端将在 `http://localhost:5173` 启动。
 
 ### 构建生产版本
 
@@ -288,9 +401,44 @@ npm run preview
 
 ### SSE 流式事件序列
 
+`POST /api/v1/analyses/stream` 返回的事件顺序：
+
 ```
-status(sandbox_executing) → trace(steps) → status(ai_analyzing) → analysis(chunks) → complete
+status(running) → status(ai_tracing) → trace(step1) → trace(step2) → ...
+→ status(ai_analyzing) → analysis(chunk1) → analysis(chunk2) → ...
+→ complete
 ```
+
+## 🌐 API 文档
+
+后端启动后访问：
+
+- **Swagger UI**: `http://localhost:8000/docs`
+- **ReDoc**: `http://localhost:8000/redoc`
+
+### 主要 API 端点
+
+| 方法 | 路径 | 说明 | 鉴权 |
+|------|------|------|------|
+| POST | `/api/v1/auth/register` | 用户注册 | 否 |
+| POST | `/api/v1/auth/login` | 用户登录 | 否 |
+| POST | `/api/v1/auth/refresh` | 刷新令牌 | 否 |
+| POST | `/api/v1/auth/send-reset-code` | 发送重置验证码 | 否 |
+| POST | `/api/v1/auth/reset-password` | 重置密码 | 否 |
+| GET | `/api/v1/auth/me` | 获取当前用户 | 是 |
+| POST | `/api/v1/configs` | 创建 AI 配置 | 是 |
+| GET | `/api/v1/configs` | 列出 AI 配置 | 是 |
+| PUT | `/api/v1/configs/{id}` | 更新 AI 配置 | 是 |
+| DELETE | `/api/v1/configs/{id}` | 删除 AI 配置 | 是 |
+| POST | `/api/v1/configs/{id}/test` | 测试 API 连接 | 是 |
+| PUT | `/api/v1/configs/{id}/default` | 设为默认配置 | 是 |
+| POST | `/api/v1/projects` | 创建项目 | 是 |
+| GET | `/api/v1/projects` | 列出项目（分页） | 是 |
+| GET | `/api/v1/projects/{id}` | 获取项目详情 | 是 |
+| DELETE | `/api/v1/projects/{id}` | 删除项目 | 是 |
+| PUT | `/api/v1/projects/{id}/favorite` | 切换收藏 | 是 |
+| POST | `/api/v1/analyses/stream` | SSE 流式分析 | 是 |
+| GET | `/api/v1/history` | 分析历史（分页 + 过滤） | 是 |
 
 ## 🔒 安全机制
 
@@ -304,18 +452,21 @@ status(sandbox_executing) → trace(steps) → status(ai_analyzing) → analysis
 
 ## 📝 开发计划
 
-后端尚未实现，当前前端为完整 UI 框架 + Mock 数据。后续开发阶段：
+后端已完成实现，当前前后端均已就绪。后续开发阶段：
 
 | 阶段 | 内容 | 状态 |
 |------|------|------|
-| Phase 1 | 项目骨架（Vite、FastAPI、Docker Compose、init.sql） | ✅ 前端 |
-| Phase 2 | 认证系统（JWT、User 模型、安全模块） | ⏳ 待开发 |
+| Phase 1 | 项目骨架（Vite、FastAPI、Docker Compose、init.sql） | ✅ 前后端 |
+| Phase 2 | 认证系统（JWT、User 模型、安全模块） | ✅ 前后端 |
 | Phase 3 | 前端认证页面 + Axios 拦截器 | ✅ 前端 |
-| Phase 4 | AI 模型配置 CRUD | ⏳ 待开发 |
-| Phase 5 | 项目管理（Project 模型、Monaco Editor 集成） | ⏳ 待开发 |
-| Phase 6 | 沙箱执行 + AI 分析 + SSE 流式推送 | ⏳ 待开发 |
+| Phase 4 | AI 模型配置 CRUD | ✅ 前后端 |
+| Phase 5 | 项目管理（Project 模型、Monaco Editor 集成） | ✅ 前后端 |
+| Phase 6 | 沙箱执行 + AI 分析 + SSE 流式推送 | ✅ AI/SSE（Docker 沙箱预留） |
 | Phase 7 | Canvas 轨迹可视化 + 播放控制 | ✅ 前端 |
-| Phase 8 | 历史记录 + 全局异常处理 + 集成测试 | ⏳ 待开发 |
+| Phase 8 | 历史记录 + 全局异常处理 + 集成测试 | ✅ 后端 |
+| TBD | Docker Compose 一键部署 | ⏳ 待开发 |
+| TBD | Celery 异步任务队列 | ⏳ 待开发 |
+| TBD | Docker 沙箱真实执行 | ⏳ 待开发 |
 
 ## 📄 许可证
 
