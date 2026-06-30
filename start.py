@@ -1,20 +1,5 @@
-"""
-AlgoViz Backend Launcher — 一键启动脚本
-
-功能：
-  - 自动检测后端监听端口是否被占用，占用则强制释放
-  - 启动 uvicorn 服务，实时捕获控制台日志并按级别分级输出
-  - 监听进程状态，崩溃时记录完整堆栈
-  - 支持 Ctrl+C 优雅终止
-
-用法：
-  python start.py              # 使用默认端口 8000
-  python start.py --port 9000  # 指定端口
-"""
-
 import argparse
 import logging
-import os
 import re
 import signal
 import subprocess
@@ -42,64 +27,124 @@ logger = logging.getLogger("launcher")
 
 
 # ---------------------------------------------------------------------------
+# 启动提示横幅
+# ---------------------------------------------------------------------------
+
+def print_banner(port: int):
+    """打印启动提示横幅。"""
+    sep = "=" * 60
+    print()
+    print(sep)
+    print("  AlgoViz 后端服务已启动")
+    print(sep)
+    print()
+    print(f"  [服务地址]  http://localhost:{port}")
+    print(f"  [API 文档]  http://localhost:{port}/docs")
+    print(f"  [备用文档]  http://localhost:{port}/redoc")
+    print(f"  [健康检查]  http://localhost:{port}/api/health")
+    print()
+    print("  按 Ctrl+C 可优雅停止后端服务")
+    print(sep)
+    print()
+
+
+# ---------------------------------------------------------------------------
 # 端口检测与释放
 # ---------------------------------------------------------------------------
 
-def find_pid_by_port(port: int) -> int | None:
-    """查找占用指定端口的进程 PID (Windows netstat)。"""
+def find_pids_by_port(port: int) -> list[int]:
+    """查找占用指定端口的所有进程 PID (Windows netstat)。"""
+    pids = []
     try:
         result = subprocess.run(
             ["netstat", "-ano"],
             capture_output=True,
-            text=True,
             encoding="gbk",
+            errors="replace",
             timeout=10,
         )
         for line in result.stdout.splitlines():
-            # 匹配 0.0.0.0:PORT 或 [::]:PORT
-            pattern = rf":{port}\s+(LISTENING|ESTABLISHED)"
-            if re.search(pattern, line):
-                parts = line.strip().split()
-                if parts:
-                    pid = parts[-1]
-                    if pid.isdigit():
-                        return int(pid)
+            # 匹配包含 :PORT LISTENING 的行
+            if f":{port}" not in line:
+                continue
+            if "LISTENING" not in line:
+                continue
+            # 最后一列是 PID
+            parts = line.split()
+            if parts and parts[-1].isdigit():
+                pid = int(parts[-1])
+                if pid not in pids:
+                    pids.append(pid)
     except Exception as e:
         logger.warning("netstat 查询失败: %s", e)
-    return None
+    return pids
 
 
 def kill_pid(pid: int):
     """强制终止进程。"""
     try:
-        subprocess.run(
+        result = subprocess.run(
             ["taskkill", "/PID", str(pid), "/F"],
             capture_output=True,
             text=True,
             encoding="gbk",
+            errors="replace",
             timeout=10,
         )
-        logger.info("已终止占用端口的进程 PID=%d", pid)
+        # 检查是否成功或进程已不存在
+        if "没有找到进程" in result.stderr or result.returncode == 0:
+            if "没有找到进程" in result.stderr:
+                logger.info("进程 PID=%d 已不存在（僵尸进程）", pid)
+            else:
+                logger.info("已终止占用端口的进程 PID=%d", pid)
+        else:
+            logger.error("终止进程 PID=%d 失败: %s", pid, result.stderr.strip())
+    except subprocess.TimeoutExpired:
+        logger.error("终止进程 PID=%d 超时", pid)
     except Exception as e:
         logger.error("终止进程 PID=%d 失败: %s", pid, e)
 
 
 def ensure_port_free(port: int):
     """确保端口未被占用，如被占用则自动释放。"""
-    pid = find_pid_by_port(port)
-    if pid is not None:
-        logger.warning("端口 %d 被占用 (PID=%d)，正在释放...", port, pid)
-        kill_pid(pid)
-        # 等待端口释放
-        for _ in range(10):
-            time.sleep(0.5)
-            if find_pid_by_port(port) is None:
-                logger.info("端口 %d 已释放", port)
-                return
-        logger.error("端口 %d 释放超时，请手动处理", port)
-        sys.exit(1)
-    else:
+    import socket
+
+    def is_port_in_use():
+        """用 socket 检测端口是否被占用。"""
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            s.bind(('0.0.0.0', port))
+            s.close()
+            return False
+        except OSError:
+            try:
+                s.close()
+            except Exception:
+                pass
+            return True
+
+    if not is_port_in_use():
         logger.info("端口 %d 可用", port)
+        return
+
+    logger.warning("端口 %d 被占用，正在释放...", port)
+
+    # 尝试通过 PID 释放
+    pids = find_pids_by_port(port)
+    if pids:
+        for pid in pids:
+            kill_pid(pid)
+
+    # 等待端口释放
+    for _ in range(20):
+        time.sleep(0.5)
+        if not is_port_in_use():
+            logger.info("端口 %d 已释放", port)
+            return
+
+    logger.error("端口 %d 释放超时，请手动处理", port)
+    sys.exit(1)
 
 
 # ---------------------------------------------------------------------------
@@ -107,24 +152,38 @@ def ensure_port_free(port: int):
 # ---------------------------------------------------------------------------
 
 LOG_LEVEL_COLORS = {
-    "INFO": "\033[32m",      # 绿色
-    "WARNING": "\033[33m",   # 黄色
-    "WARN": "\033[33m",
-    "ERROR": "\033[31m",     # 红色
-    "CRITICAL": "\033[1;31m",# 粗红
-    "DEBUG": "\033[36m",     # 青色
+    "INFO": "[INFO]",
+    "WARNING": "[WARN]",
+    "WARN": "[WARN]",
+    "ERROR": "[ERROR]",
+    "CRITICAL": "[FATAL]",
+    "DEBUG": "[DEBUG]",
 }
-RESET = "\033[0m"
 
 
 def colorize_line(line: str) -> str:
-    """为日志行添加颜色标记。"""
+    """为日志行添加级别标签。"""
     match = LOG_LEVEL_RE.search(line)
     if match:
         level_text = match.group(1).strip()
-        color = LOG_LEVEL_COLORS.get(level_text, "")
-        return f"{color}{line}{RESET}"
+        tag = LOG_LEVEL_COLORS.get(level_text, "")
+        if tag:
+            return f"{tag} {line}"
     return line
+
+
+def safe_print(text: str):
+    """安全打印，忽略无法编码的字符。"""
+    try:
+        print(text, flush=True)
+    except UnicodeEncodeError:
+        # 用 GBK 编码，无法编码的字符替换为 '?'
+        cleaned = text.encode('gbk', errors='replace').decode('gbk')
+        print(cleaned, flush=True)
+
+
+# ANSI 转义序列清除正则
+ANSI_ESCAPE_RE = re.compile(r'\x1b\[[0-9;]*m')
 
 
 def stream_reader(reader, callback):
@@ -132,7 +191,9 @@ def stream_reader(reader, callback):
     for raw_line in reader:
         line = raw_line.rstrip("\r\n")
         if line:
-            callback(line)
+            # 清除 ANSI 颜色码，避免 GBK 编码下 print 报错
+            clean_line = ANSI_ESCAPE_RE.sub('', line)
+            callback(clean_line)
 
 
 # ---------------------------------------------------------------------------
@@ -152,14 +213,6 @@ def start_backend(port: int):
         logger.error("后端目录不存在: %s", BACKEND_DIR)
         sys.exit(1)
 
-    logger.info("=" * 60)
-    logger.info("  AlgoViz Backend Launcher")
-    logger.info("=" * 60)
-    logger.info("Python : %s", VENV_PYTHON)
-    logger.info("Port   : %d", port)
-    logger.info("Module : %s", MODULE_PATH)
-    logger.info("-" * 60)
-
     # 确保端口空闲
     ensure_port_free(port)
 
@@ -170,6 +223,7 @@ def start_backend(port: int):
         "--host", "0.0.0.0",
         "--port", str(port),
         "--reload",
+        "--reload-dir", ".",
     ]
 
     logger.info("启动命令: %s", " ".join(cmd))
@@ -189,14 +243,10 @@ def start_backend(port: int):
         errors="replace",
     )
 
-    stop_event = threading.Event()
-
+    # 日志回调
     def log_callback(line: str):
         colored = colorize_line(line)
-        print(colored, flush=True)
-        # 如果检测到启动完成标志，停止监控线程
-        if "Application startup complete" in line:
-            stop_event.set()
+        safe_print(colored)
 
     # 启动读取线程
     reader_thread = threading.Thread(
@@ -206,8 +256,26 @@ def start_backend(port: int):
     )
     reader_thread.start()
 
+    # 等待后端启动完成（轮询进程是否存活 + 超时保护）
+    startup_timeout = 15
+    start_time = time.time()
+    while time.time() - start_time < startup_timeout:
+        poll_val = proc.poll()
+        if poll_val is not None:
+            logger.error("进程意外退出，poll=%s, returncode=%s", poll_val, proc.returncode)
+            break
+        time.sleep(0.5)
+
+    # 进程仍在运行，打印启动横幅
+    if proc.poll() is None:
+        print_banner(port)
+        sys.stdout.flush()
+    else:
+        logger.error("后端服务启动失败，进程已退出")
+        sys.exit(1)
+
     # 注册信号处理器 — Ctrl+C 优雅退出
-    def signal_handler(sig, frame):
+    def signal_handler(sig, frame):  # noqa: ARG001
         logger.info("\n收到终止信号，正在关闭后端服务...")
         proc.terminate()
         try:
@@ -217,7 +285,6 @@ def start_backend(port: int):
             proc.kill()
         proc.wait()
         logger.info("后端服务已停止")
-        stop_event.set()
         sys.exit(0)
 
     signal.signal(signal.SIGINT, signal_handler)
@@ -246,10 +313,6 @@ def main():
         description="AlgoViz Backend Launcher — 一键启动后端服务",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-示例:
-  python start.py                  # 默认端口 8000
-  python start.py --port 9000      # 指定端口
-  python start.py --help           # 显示帮助
         """,
     )
     parser.add_argument(
