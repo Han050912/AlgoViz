@@ -54,6 +54,7 @@ async def register(req: RegisterRequest, db: AsyncSession = Depends(get_db)):
         nickname=req.nickname,
     )
     db.add(user)
+    await db.flush()
     await db.commit()
     await db.refresh(user)
 
@@ -182,6 +183,7 @@ async def reset_password(req: ResetPasswordRequest, db: AsyncSession = Depends(g
         )
 
     user.hashed_password = hash_password(req.new_password)
+    await db.flush()
     await db.commit()
 
     return APIResponse(

@@ -1,5 +1,3 @@
-"""Project CRUD service with SHA-256 hashing and pagination."""
-import hashlib
 from typing import Optional, Sequence, Tuple
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, update
@@ -13,7 +11,7 @@ class ProjectService:
         self.db = db
 
     async def create(self, user_id: str, language: str, source_code: str, name: Optional[str] = None) -> Project:
-        source_hash = hashlib.sha256(source_code.encode("utf-8")).hexdigest()
+        source_hash = Project.compute_hash(source_code)
         project = Project(
             user_id=user_id,
             name=name,
@@ -23,6 +21,7 @@ class ProjectService:
             source_hash=source_hash,
         )
         self.db.add(project)
+        await self.db.flush()
         await self.db.commit()
         await self.db.refresh(project)
         return project
@@ -68,6 +67,7 @@ class ProjectService:
 
     async def toggle_favorite(self, project: Project) -> Project:
         project.is_favorite = not project.is_favorite
+        await self.db.flush()
         await self.db.commit()
         await self.db.refresh(project)
         return project

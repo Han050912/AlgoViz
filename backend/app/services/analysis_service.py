@@ -29,15 +29,13 @@ class AnalysisService:
             status=AnalysisStatus.pending,
         )
         self.db.add(analysis)
-        await self.db.commit()
-        await self.db.refresh(analysis)
+        await self.db.flush()
         return analysis
 
     async def mark_running(self, analysis: Analysis) -> Analysis:
         analysis.status = AnalysisStatus.running
-        analysis.started_at = datetime.utcnow()
-        await self.db.commit()
-        await self.db.refresh(analysis)
+        analysis.started_at = datetime.now()
+        await self.db.flush()
         return analysis
 
     async def save_trace(
@@ -51,11 +49,10 @@ class AnalysisService:
             analysis_id=analysis.id,
             execution_mode=execution_mode,
             trace_data=trace_data,
-            environment_info={"runtime": "ai_simulated", "version": "1.0"},
+            environment_info={"runtime": execution_mode, "version": "1.0"},
         )
         self.db.add(trace)
-        await self.db.commit()
-        await self.db.refresh(trace)
+        await self.db.flush()
         return trace
 
     async def save_report(
@@ -75,21 +72,18 @@ class AnalysisService:
             algorithm_type=algorithm_type,
         )
         self.db.add(report)
-        await self.db.commit()
-        await self.db.refresh(report)
+        await self.db.flush()
         return report
 
     async def mark_completed(self, analysis: Analysis) -> Analysis:
         analysis.status = AnalysisStatus.completed
-        analysis.completed_at = datetime.utcnow()
-        await self.db.commit()
-        await self.db.refresh(analysis)
+        analysis.completed_at = datetime.now()
+        await self.db.flush()
         return analysis
 
     async def mark_failed(self, analysis: Analysis, error_message: str) -> Analysis:
         analysis.status = AnalysisStatus.failed
         analysis.error_message = error_message
-        analysis.completed_at = datetime.utcnow()
-        await self.db.commit()
-        await self.db.refresh(analysis)
+        analysis.completed_at = datetime.now()
+        await self.db.flush()
         return analysis

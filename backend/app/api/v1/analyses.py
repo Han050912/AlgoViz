@@ -81,10 +81,12 @@ async def analyze_code_stream(
             except asyncio.TimeoutError:
                 yield await _sse_event("error", {"message": "Trace generation timed out (15s)"})
                 await svc.mark_failed(analysis, "Trace generation timed out")
+                await db.commit()
                 return
             except Exception as e:
                 yield await _sse_event("error", {"message": f"Trace generation failed: {str(e)}"})
                 await svc.mark_failed(analysis, f"Trace generation failed: {str(e)}")
+                await db.commit()
                 return
 
             # Step 2: Stream AI analysis
@@ -97,10 +99,12 @@ async def analyze_code_stream(
             except Exception as e:
                 yield await _sse_event("error", {"message": f"Analysis failed: {str(e)}"})
                 await svc.mark_failed(analysis, f"Analysis failed: {str(e)}")
+                await db.commit()
                 return
 
             await svc.save_report(analysis=analysis, markdown_content=full_report)
             await svc.mark_completed(analysis)
+            await db.commit()
 
             yield await _sse_event("complete", {
                 "analysis_id": analysis.id,
@@ -115,6 +119,10 @@ async def analyze_code_stream(
                     pass
             try:
                 yield await _sse_event("error", {"message": str(e)})
+            except Exception:
+                pass
+            try:
+                await db.commit()
             except Exception:
                 pass
 

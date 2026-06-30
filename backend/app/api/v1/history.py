@@ -40,8 +40,8 @@ async def list_history(
         count_query = count_query.where(Project.language == language.lower())
 
     if status:
-        query = query.where(Analysis.status == status)
-        count_query = count_query.where(Analysis.status == status)
+        query = query.where(Analysis.status == status.lower())
+        count_query = count_query.where(Analysis.status == status.lower())
 
     # Total count
     total_result = await db.execute(count_query)

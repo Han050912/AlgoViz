@@ -80,6 +80,7 @@ class ConfigService:
         if model_name is not None:
             config.model_name = model_name
 
+        await self.db.flush()
         await self.db.commit()
         await self.db.refresh(config)
         return config
@@ -96,6 +97,7 @@ class ConfigService:
             .values(is_default=False)
         )
         config.is_default = True
+        await self.db.flush()
         await self.db.commit()
         await self.db.refresh(config)
         return config
