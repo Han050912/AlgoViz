@@ -5,6 +5,7 @@ __pycache__/
 *.egg
 .pytest_cache/
 .mypy_cache/
+*.pyc
 
 # Python virtual environments
 .venv/
@@ -12,6 +13,10 @@ venv/
 ENV/
 
 backend/.venv/
+
+# Python alembic
+backend/alembic/versions/
+!backend/alembic/versions/.gitkeep
 
 # Node
 node_modules/
@@ -49,13 +54,25 @@ pnpm-debug.log*
 .env
 .env.local
 .env.*.local
+backend/.env
 
 # Playwright MCP (session artifacts, logs)
 .playwright-mcp/
 
 # Claude Code
 .claude/
-CLAUDE.md
 
 # OS
 Thumbs.db
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Docker
+docker-compose.override.yml
+
+# Uploads / temporary files
+uploads/
+/tmp/
