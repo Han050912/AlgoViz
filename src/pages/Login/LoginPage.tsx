@@ -37,8 +37,8 @@ const LoginPageContent = () => {
       };
       const res = await authService.login(data);
       const store = values.rememberMe ? localStorage : sessionStorage;
-      store.setItem('access_token', res.data.access_token);
-      store.setItem('refresh_token', res.data.refresh_token);
+      store.setItem('access_token', res.access_token);
+      store.setItem('refresh_token', res.refresh_token);
       message.success('登录成功');
       navigate('/workspace', { replace: true });
     } catch (err: any) {

@@ -1,26 +1,22 @@
 ﻿import api from './api';
 import type {
   LoginRequest,
-  LoginResponse,
   RegisterRequest,
-  RegisterResponse,
-  TokenResponse,
-  UserResponse,
   ResetPasswordRequest,
   APIResponse,
 } from '@/types/auth';
 
 export const authService = {
-  login: (data: LoginRequest): Promise<LoginResponse> =>
+  login: (data: LoginRequest): Promise<{ user: { id: string; email: string; nickname: string | null } } & { access_token: string; refresh_token: string; token_type: 'bearer' }> =>
     api.post('/auth/login', data).then(r => r.data),
 
-  register: (data: RegisterRequest): Promise<RegisterResponse> =>
+  register: (data: RegisterRequest): Promise<{ user: { id: string; email: string; nickname: string | null } } & { access_token: string; refresh_token: string; token_type: 'bearer' }> =>
     api.post('/auth/register', data).then(r => r.data),
 
-  refreshToken: (refreshToken: string): Promise<TokenResponse> =>
+  refreshToken: (refreshToken: string): Promise<{ access_token: string; refresh_token: string; token_type: 'bearer' }> =>
     api.post('/auth/refresh', { refresh_token: refreshToken }).then(r => r.data),
 
-  getMe: (): Promise<UserResponse> =>
+  getMe: (): Promise<{ user: { id: string; email: string; nickname: string | null } }> =>
     api.get('/auth/me').then(r => r.data),
 
   sendResetCode: (email: string): Promise<APIResponse> =>
