@@ -20,7 +20,7 @@ async def create_config(
 ):
     svc = ConfigService(db)
     config = await svc.create(
-        user_id=current_user.id,
+        user_id=str(current_user.id),
         label=req.label,
         base_url=req.base_url,
         api_key=req.api_key,
@@ -35,7 +35,7 @@ async def list_configs(
     current_user: User = Depends(get_current_user),
 ):
     svc = ConfigService(db)
-    configs = await svc.get_user_configs(current_user.id)
+    configs = await svc.get_user_configs(str(current_user.id))
     return APIResponse(
         code=200,
         message="success",
@@ -50,9 +50,9 @@ async def get_config(
     current_user: User = Depends(get_current_user),
 ):
     svc = ConfigService(db)
-    config = await svc.get_config(config_id, current_user.id)
+    config = await svc.get_config(config_id, str(current_user.id))
     if config is None:
-        raise HTTPException(status_code=404, detail="配置不存在")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="配置不存在")
     return APIResponse(code=200, message="success", data=ConfigOut.model_validate(config))
 
 
@@ -64,9 +64,9 @@ async def update_config(
     current_user: User = Depends(get_current_user),
 ):
     svc = ConfigService(db)
-    config = await svc.get_config(config_id, current_user.id)
+    config = await svc.get_config(config_id, str(current_user.id))
     if config is None:
-        raise HTTPException(status_code=404, detail="配置不存在")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="配置不存在")
     config = await svc.update(
         config,
         label=req.label,
@@ -84,9 +84,9 @@ async def delete_config(
     current_user: User = Depends(get_current_user),
 ):
     svc = ConfigService(db)
-    config = await svc.get_config(config_id, current_user.id)
+    config = await svc.get_config(config_id, str(current_user.id))
     if config is None:
-        raise HTTPException(status_code=404, detail="配置不存在")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="配置不存在")
     await svc.delete(config)
     return APIResponse(code=200, message="配置已删除", data=None)
 
@@ -98,16 +98,16 @@ async def test_config(
     current_user: User = Depends(get_current_user),
 ):
     svc = ConfigService(db)
-    config = await svc.get_config(config_id, current_user.id)
+    config = await svc.get_config(config_id, str(current_user.id))
     if config is None:
-        raise HTTPException(status_code=404, detail="配置不存在")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="配置不存在")
 
     # Test the connection with a lightweight models.list call
     try:
         from openai import AsyncOpenAI
 
         api_key = await svc.decrypt_api_key(config)
-        client = AsyncOpenAI(base_url=config.base_url, api_key=api_key, timeout=10.0)
+        client = AsyncOpenAI(base_url=str(config.base_url), api_key=api_key, timeout=10.0)
         await client.models.list()
         return APIResponse(
             code=200,
@@ -129,8 +129,8 @@ async def set_default_config(
     current_user: User = Depends(get_current_user),
 ):
     svc = ConfigService(db)
-    config = await svc.get_config(config_id, current_user.id)
+    config = await svc.get_config(config_id, str(current_user.id))
     if config is None:
-        raise HTTPException(status_code=404, detail="配置不存在")
-    config = await svc.set_default(config, current_user.id)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="配置不存在")
+    config = await svc.set_default(config, str(current_user.id))
     return APIResponse(code=200, message="已设为默认配置", data=ConfigOut.model_validate(config))

@@ -35,7 +35,7 @@ async def analyze_code_stream(
     )
     project = result.scalar_one_or_none()
     if project is None:
-        raise HTTPException(status_code=404, detail="项目不存在")
+        raise HTTPException(status_code=404, detail=" [err] ")
 
     # Validate API config ownership
     result = await db.execute(
@@ -43,7 +43,7 @@ async def analyze_code_stream(
     )
     api_config = result.scalar_one_or_none()
     if api_config is None:
-        raise HTTPException(status_code=404, detail="AI配置不存在")
+        raise HTTPException(status_code=404, detail="AI [err] ")
 
     svc = AnalysisService(db)
 
@@ -51,7 +51,7 @@ async def analyze_code_stream(
         analysis = None
         try:
             analysis = await svc.create_analysis(
-                user_id=current_user.id,
+                user_id=str(current_user.id),
                 project_id=project_id,
                 api_config_id=api_config_id,
             )
@@ -63,23 +63,23 @@ async def analyze_code_stream(
             api_key = await config_svc.decrypt_api_key(api_config)
 
             ai = AIService(
-                base_url=api_config.base_url,
+                base_url=str(api_config.base_url),
                 api_key=api_key,
-                model_name=api_config.model_name,
+                model_name=str(api_config.model_name),
             )
 
             # Step 1: Generate execution trace
             yield await _sse_event("status", {"status": "ai_tracing"})
             try:
                 trace_data = await asyncio.wait_for(
-                    ai.generate_trace(code=project.source_code, language=project.language),
-                    timeout=15.0,
+                    ai.generate_trace(code=str(project.source_code), language=str(project.language)),
+                    timeout=120.0,
                 )
                 await svc.save_trace(analysis=analysis, trace_data=trace_data, execution_mode="ai_simulated")
                 for step in trace_data.get("steps", []):
                     yield await _sse_event("trace", step)
             except asyncio.TimeoutError:
-                yield await _sse_event("error", {"message": "Trace generation timed out (15s)"})
+                yield await _sse_event("error", {"message": "Trace generation timed out"})
                 await svc.mark_failed(analysis, "Trace generation timed out")
                 await db.commit()
                 return
@@ -93,7 +93,7 @@ async def analyze_code_stream(
             yield await _sse_event("status", {"status": "ai_analyzing"})
             full_report = ""
             try:
-                async for chunk in ai.analyze_code_stream(code=project.source_code, language=project.language):
+                async for chunk in ai.analyze_code_stream(code=str(project.source_code), language=str(project.language)):
                     full_report += chunk
                     yield await _sse_event("analysis", {"chunk": chunk})
             except Exception as e:

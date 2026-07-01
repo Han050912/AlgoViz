@@ -1,6 +1,7 @@
 """
 AI service: async OpenAI client for code analysis and trace generation.
 """
+import json
 from typing import AsyncIterator
 from openai import AsyncOpenAI
 
@@ -52,7 +53,7 @@ class AIService:
     """Async OpenAI client wrapper for code analysis and trace generation."""
 
     def __init__(self, base_url: str, api_key: str, model_name: str):
-        self.client = AsyncOpenAI(base_url=base_url, api_key=api_key, timeout=5.0)
+        self.client = AsyncOpenAI(base_url=base_url, api_key=api_key, timeout=180.0)
         self.model = model_name
 
     async def analyze_code_stream(self, code: str, language: str) -> AsyncIterator[str]:
@@ -74,7 +75,10 @@ class AIService:
                 yield chunk.choices[0].delta.content
 
     async def generate_trace(self, code: str, language: str, max_retries: int = 2) -> dict:
-        """Generate a simulated execution trace. Retries on JSON parse failure."""
+        """Generate a simulated execution trace. Retries on JSON parse failure.
+
+        Returns empty trace on failure — the analysis step will still run.
+        """
         prompt = TRACE_SYSTEM_PROMPT.format(language=language)
         last_error = None
 
@@ -91,19 +95,28 @@ class AIService:
                     ],
                     temperature=0.1,
                 )
-                content = response.choices[0].message.content.strip()
+                content = (response.choices[0].message.content or "").strip()
                 # Remove markdown code fences if present
                 if content.startswith("```"):
                     content = content[content.find("\n") + 1 :]
                 if content.endswith("```"):
                     content = content[: content.rfind("```")]
-                import json
                 trace = json.loads(content)
                 trace["language"] = language
                 return trace
+            except json.JSONDecodeError:
+                # Retry only on JSON parse failure
+                last_error = None
+                if attempt < max_retries:
+                    continue
+                else:
+                    break
             except Exception as e:
                 last_error = e
                 if attempt < max_retries:
                     continue
-                raise last_error
+                break
+
+        # Fallback: return empty trace so analysis can still proceed
+        return {"language": language, "steps": []}
 

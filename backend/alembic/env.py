@@ -39,7 +39,10 @@ def _get_url() -> str:
                 if line.startswith("DATABASE_URL="):
                     raw = line.split("=", 1)[1].strip()
                     return _ensure_sync(raw)
-    return config.get_main_option("sqlalchemy.url")
+    url = config.get_main_option("sqlalchemy.url")
+    if url is None:
+        raise RuntimeError("sqlalchemy.url not configured in alembic.ini")
+    return url
 
 
 def _ensure_sync(url: str) -> str:

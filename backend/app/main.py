@@ -1,10 +1,12 @@
-"""
-AlgoViz Backend — FastAPI application entry point.
-"""
+"""AlgoViz Backend - FastAPI application entry point."""
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from app.core.config import settings
+
+import sys
+print(f"[STARTUP] SECRET_KEY(first 10)={settings.SECRET_KEY[:10]}... ALGORITHM={settings.ALGORITHM}", file=sys.stderr, flush=True)
+
 from app.api.v1.auth import router as auth_router
 from app.api.v1.configs import router as configs_router
 from app.api.v1.projects import router as projects_router
@@ -18,7 +20,6 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
@@ -27,15 +28,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Routes
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(configs_router, prefix="/api/v1")
 app.include_router(projects_router, prefix="/api/v1")
 app.include_router(history_router, prefix="/api/v1")
 app.include_router(analyses_router, prefix="/api/v1")
 
-
-# ---- Global Exception Handlers ----
 
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request, exc: HTTPException):
@@ -49,7 +47,7 @@ async def http_exception_handler(request, exc: HTTPException):
 async def general_exception_handler(request, exc: Exception):
     return JSONResponse(
         status_code=500,
-        content={"code": 500, "message": "服务器内部错误", "data": None},
+        content={"code": 500, "message": "Internal server error", "data": None},
     )
 
 

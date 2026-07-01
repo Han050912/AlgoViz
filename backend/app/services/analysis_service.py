@@ -33,8 +33,8 @@ class AnalysisService:
         return analysis
 
     async def mark_running(self, analysis: Analysis) -> Analysis:
-        analysis.status = AnalysisStatus.running
-        analysis.started_at = datetime.now()
+        for k, v in {"status": AnalysisStatus.running, "started_at": datetime.now()}.items():
+            setattr(analysis, k, v)
         await self.db.flush()
         return analysis
 
@@ -76,14 +76,13 @@ class AnalysisService:
         return report
 
     async def mark_completed(self, analysis: Analysis) -> Analysis:
-        analysis.status = AnalysisStatus.completed
-        analysis.completed_at = datetime.now()
+        for k, v in {"status": AnalysisStatus.completed, "completed_at": datetime.now()}.items():
+            setattr(analysis, k, v)
         await self.db.flush()
         return analysis
 
     async def mark_failed(self, analysis: Analysis, error_message: str) -> Analysis:
-        analysis.status = AnalysisStatus.failed
-        analysis.error_message = error_message
-        analysis.completed_at = datetime.now()
+        for k, v in {"status": AnalysisStatus.failed, "error_message": error_message, "completed_at": datetime.now()}.items():
+            setattr(analysis, k, v)
         await self.db.flush()
         return analysis

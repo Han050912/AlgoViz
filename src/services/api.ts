@@ -13,6 +13,9 @@ api.interceptors.request.use((config) => {
     sessionStorage.getItem('access_token');
   if (token) {
     config.headers.Authorization = 'Bearer ' + token;
+    console.log('[API REQ] Token attached, first 30 chars:', token.slice(0, 30));
+  } else {
+    console.warn('[API REQ] No token found in localStorage or sessionStorage');
   }
   return config;
 });
@@ -39,17 +42,18 @@ api.interceptors.response.use(
           error.config.headers.Authorization = 'Bearer ' + data.data.access_token;
           return api(error.config);
         } catch {
-          // refresh 也失败 -> 清空 token 跳转登录
+          // refresh 也失败 -> 清空 token，由各页面自行处理
         }
       }
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
       sessionStorage.removeItem('access_token');
       sessionStorage.removeItem('refresh_token');
-      window.location.href = '/login';
     }
     return Promise.reject(error);
   }
 );
 
 export default api;
+
+

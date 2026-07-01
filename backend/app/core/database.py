@@ -1,6 +1,7 @@
 """
 Async SQLAlchemy engine and session factory for MySQL.
 """
+from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from app.core.config import settings
 
@@ -19,8 +20,7 @@ AsyncSessionLocal = async_sessionmaker(
 )
 
 
-async def get_db() -> AsyncSession:
-    """FastAPI dependency that yields an async database session."""
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with AsyncSessionLocal() as session:
         try:
             yield session

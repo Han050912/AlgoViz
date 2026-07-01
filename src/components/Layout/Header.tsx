@@ -1,42 +1,73 @@
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Tooltip } from 'antd';
+﻿import { useNavigate, useLocation } from "react-router-dom";
+import { Dropdown } from "antd";
 import {
   SettingOutlined,
   HistoryOutlined,
   CodeOutlined,
   UserOutlined,
-} from '@ant-design/icons';
-import Logo from '@/components/common/Logo';
+  LogoutOutlined,
+  KeyOutlined,
+} from "@ant-design/icons";
+import Logo from "@/components/common/Logo";
 
 const navItems = [
-  { key: '/workspace', label: '工作台', icon: <CodeOutlined /> },
-  { key: '/history', label: '历史记录', icon: <HistoryOutlined /> },
-  { key: '/settings', label: '设置', icon: <SettingOutlined /> },
+  { key: "/workspace", label: "\u5de5\u4f5c\u53f0", icon: <CodeOutlined /> },
+  { key: "/history", label: "\u5386\u53f2\u8bb0\u5f55", icon: <HistoryOutlined /> },
+  { key: "/settings", label: "\u8bbe\u7f6e", icon: <SettingOutlined /> },
 ];
 
-/**
- * Header — 透明顶栏（56px），Logo + 导航 + 用户菜单
- */
 const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
   const isActive = (path: string) => location.pathname.startsWith(path);
 
+  const handleLogout = () => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    sessionStorage.removeItem("access_token");
+    sessionStorage.removeItem("refresh_token");
+    navigate("/login");
+  };
+
+  const userMenuItems = {
+    items: [
+      {
+        key: "settings",
+        icon: <SettingOutlined />,
+        label: "\u8d26\u53f7\u8bbe\u7f6e",
+        onClick: () => navigate("/settings"),
+      },
+      {
+        key: "api-keys",
+        icon: <KeyOutlined />,
+        label: "API \u5bc6\u94a5\u7ba1\u7406",
+        onClick: () => navigate("/settings"),
+      },
+      { type: "divider" as const },
+      {
+        key: "logout",
+        icon: <LogoutOutlined />,
+        label: "\u9000\u51fa\u767b\u5f55",
+        danger: true,
+        onClick: handleLogout,
+      },
+    ],
+  };
+
   return (
     <header
       className="flex items-center justify-between px-6 select-none"
       style={{
         height: 56,
-        background: 'transparent',
-        borderBottom: 'none',
+        background: "transparent",
+        borderBottom: "none",
       }}
     >
-      {/* 左侧：Logo + 导航 */}
       <div className="flex items-center gap-8">
         <div
           className="cursor-pointer"
-          onClick={() => navigate('/workspace')}
+          onClick={() => navigate("/workspace")}
         >
           <Logo />
         </div>
@@ -50,14 +81,14 @@ const Header = () => {
                 fontSize: 14,
                 fontWeight: 500,
                 color: isActive(item.key)
-                  ? 'var(--color-brand-gold)'
-                  : 'var(--color-text-secondary)',
-                background: 'transparent',
-                border: 'none',
-                cursor: 'pointer',
+                  ? "var(--color-brand-gold)"
+                  : "var(--color-text-secondary)",
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
                 borderBottom: isActive(item.key)
-                  ? '2px solid var(--color-brand-gold)'
-                  : '2px solid transparent',
+                  ? "2px solid var(--color-brand-gold)"
+                  : "2px solid transparent",
               }}
             >
               {item.icon}
@@ -67,26 +98,25 @@ const Header = () => {
         </nav>
       </div>
 
-      {/* 右侧：用户 */}
-      <Tooltip title="用户">
+      <Dropdown menu={userMenuItems} placement="bottomRight" trigger={["click"]}>
         <div
           className="flex items-center justify-center rounded-full cursor-pointer transition-colors"
           style={{
             width: 32,
             height: 32,
-            border: '1.5px solid var(--color-brand-gold)',
-            color: 'var(--color-text-tertiary)',
+            border: "1.5px solid var(--color-brand-gold)",
+            color: "var(--color-text-tertiary)",
           }}
           onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.color = '#F9FAFB';
+            (e.currentTarget as HTMLElement).style.color = "#F9FAFB";
           }}
           onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.color = '#9CA3AF';
+            (e.currentTarget as HTMLElement).style.color = "#9CA3AF";
           }}
         >
           <UserOutlined style={{ fontSize: 14 }} />
         </div>
-      </Tooltip>
+      </Dropdown>
     </header>
   );
 };

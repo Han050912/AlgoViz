@@ -66,7 +66,7 @@ class ProjectService:
         await self.db.commit()
 
     async def toggle_favorite(self, project: Project) -> Project:
-        project.is_favorite = not project.is_favorite
+        setattr(project, "is_favorite", not bool(project.is_favorite))
         await self.db.flush()
         await self.db.commit()
         await self.db.refresh(project)

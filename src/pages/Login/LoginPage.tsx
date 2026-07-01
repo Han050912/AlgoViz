@@ -90,7 +90,7 @@ const LoginPageContent = () => {
       <Form<LoginFormValues>
         form={form}
         layout="vertical"
-        initialValues={{ rememberMe: false }}
+        initialValues={{ rememberMe: true }}
         onFinish={onFinish}
         autoComplete="off"
         size="large"

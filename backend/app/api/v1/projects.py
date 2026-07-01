@@ -22,12 +22,12 @@ async def create_project(
 ):
     svc = ProjectService(db)
     project = await svc.create(
-        user_id=current_user.id,
+        user_id=str(current_user.id),
         language=req.language,
         source_code=req.source_code,
         name=req.name,
     )
-    return APIResponse(code=201, message="项目创建成功", data=ProjectOut.model_validate(project))
+    return APIResponse(code=201, message=" [err] ", data=ProjectOut.model_validate(project))
 
 
 @router.get("", response_model=APIResponse)
@@ -40,7 +40,7 @@ async def list_projects(
 ):
     svc = ProjectService(db)
     projects, total = await svc.list_projects(
-        user_id=current_user.id,
+        user_id=str(current_user.id),
         page=page,
         page_size=page_size,
         language=language,
@@ -66,9 +66,9 @@ async def get_project(
     current_user: User = Depends(get_current_user),
 ):
     svc = ProjectService(db)
-    project = await svc.get_project(project_id, current_user.id)
+    project = await svc.get_project(project_id, str(current_user.id))
     if project is None:
-        raise HTTPException(status_code=404, detail="项目不存在")
+        raise HTTPException(status_code=404, detail=" [err] ")
     return APIResponse(code=200, message="success", data=ProjectOut.model_validate(project))
 
 
@@ -79,11 +79,11 @@ async def delete_project(
     current_user: User = Depends(get_current_user),
 ):
     svc = ProjectService(db)
-    project = await svc.get_project(project_id, current_user.id)
+    project = await svc.get_project(project_id, str(current_user.id))
     if project is None:
-        raise HTTPException(status_code=404, detail="项目不存在")
+        raise HTTPException(status_code=404, detail=" [err] ")
     await svc.delete(project)
-    return APIResponse(code=200, message="项目已删除", data=None)
+    return APIResponse(code=200, message=" [err] ", data=None)
 
 
 @router.put("/{project_id}/favorite", response_model=APIResponse[ProjectOut])
@@ -93,8 +93,8 @@ async def toggle_favorite(
     current_user: User = Depends(get_current_user),
 ):
     svc = ProjectService(db)
-    project = await svc.get_project(project_id, current_user.id)
+    project = await svc.get_project(project_id, str(current_user.id))
     if project is None:
-        raise HTTPException(status_code=404, detail="项目不存在")
+        raise HTTPException(status_code=404, detail=" [err] ")
     project = await svc.toggle_favorite(project)
-    return APIResponse(code=200, message="收藏状态已切换", data=ProjectOut.model_validate(project))
+    return APIResponse(code=200, message=" [err] ", data=ProjectOut.model_validate(project))
