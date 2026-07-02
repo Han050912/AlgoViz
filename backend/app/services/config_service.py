@@ -2,7 +2,6 @@
 from typing import Optional, Sequence
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
-
 from app.models.api_config import ApiConfig
 from app.core.security import api_key_crypto
 

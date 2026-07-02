@@ -3,10 +3,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from app.core.config import settings
-
 import sys
 print(f"[STARTUP] SECRET_KEY(first 10)={settings.SECRET_KEY[:10]}... ALGORITHM={settings.ALGORITHM}", file=sys.stderr, flush=True)
-
 from app.api.v1.auth import router as auth_router
 from app.api.v1.configs import router as configs_router
 from app.api.v1.projects import router as projects_router

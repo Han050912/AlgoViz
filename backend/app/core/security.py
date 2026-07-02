@@ -4,11 +4,9 @@ JWT token creation/verification, bcrypt password hashing, AES-256-GCM API key en
 import os
 import base64
 from datetime import datetime, timedelta, timezone
-
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-
 from app.core.config import settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -60,6 +58,5 @@ class ApiKeyCrypto:
 
     def decrypt(self, ciphertext: bytes, nonce: bytes) -> str:
         return self.aesgcm.decrypt(nonce, ciphertext, None).decode("utf-8")
-
 
 api_key_crypto = ApiKeyCrypto()

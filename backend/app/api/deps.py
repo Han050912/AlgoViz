@@ -34,7 +34,7 @@ async def get_current_user(
             )
         user_id = payload.get("sub")
     except JWTError as exc:
-        print(f"[AUTH DEBUG] JWTError on token (first 40): {credentials.credentials[:40]}")
+        print(f"[AUTH DEBUG] JWTError on token (first 20): {credentials.credentials[:20]}")
         print(f"  {type(exc).__name__}: {exc}")
         traceback.print_exc()
         raise HTTPException(
@@ -42,7 +42,7 @@ async def get_current_user(
             detail=f"Token rejected: {exc}",
         )
     except Exception as exc:
-        print(f"[AUTH DEBUG] Unexpected error on token (first 40): {credentials.credentials[:40]}")
+        print(f"[AUTH DEBUG] Unexpected error on token (first 20): {credentials.credentials[:20]}")
         print(f"  {type(exc).__name__}: {exc}")
         traceback.print_exc()
         raise HTTPException(

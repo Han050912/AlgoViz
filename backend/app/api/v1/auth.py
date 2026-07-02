@@ -99,7 +99,7 @@ async def login(req: LoginRequest, db: AsyncSession = Depends(get_db)):
 @router.post("/refresh", response_model=APIResponse[TokenPair])
 async def refresh_token(req: RefreshRequest):
     """Refresh access token using refresh token."""
-    print(f"[AUTH DEBUG] Refresh attempt, token first 40: {req.refresh_token[:40]}")
+    print(f"[AUTH DEBUG] Refresh attempt, token first 20: {req.refresh_token[:20]}")
     try:
         payload = decode_token(req.refresh_token)
     except Exception as exc:

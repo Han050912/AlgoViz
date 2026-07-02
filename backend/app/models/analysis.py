@@ -31,5 +31,6 @@ class Analysis(Base):
     project = relationship("Project", backref="analyses")
     user = relationship("User", backref="analyses")
     api_config = relationship("ApiConfig", backref="analyses")
+    
     report = relationship("AnalysisReport", back_populates="analysis", uselist=False)
     trace = relationship("ExecutionTrace", back_populates="analysis", uselist=False)
