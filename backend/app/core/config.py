@@ -44,6 +44,16 @@ class Settings(BaseSettings):
 
     LOG_LEVEL: str = "INFO"
 
+    # 邮件（SMTP）
+    SMTP_HOST: str = "smtp.qq.com"
+    SMTP_PORT: int = 465
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM_NAME: str = "AlgoViz"
+
+    # 验证码有效期（分钟）
+    CODE_EXPIRE_MINUTES: int = 10
+
     model_config = {
         "env_file": str(_env_path),
         "env_file_encoding": "utf-8",

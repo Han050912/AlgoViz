@@ -5,6 +5,7 @@ import {
   MailOutlined,
   LockOutlined,
   CheckCircleOutlined,
+  UserOutlined,
 } from '@ant-design/icons';
 import AuthLayout from '@/components/auth/AuthLayout';
 import AlgoVizLogo from '@/components/auth/AlgoVizLogo';
@@ -16,6 +17,7 @@ import type { RegisterRequest } from '@/types/auth';
 interface RegisterFormValues {
   emailPrefix: string;
   emailDomain: string;
+  nickname: string;
   password: string;
   confirmPassword: string;
   captchaVerified: boolean;
@@ -51,7 +53,11 @@ const RegisterPageContent = () => {
       setLoading(true);
       try {
         const email = values.emailPrefix + '@' + values.emailDomain;
-        const data: RegisterRequest = { email, password: values.password };
+        const data: RegisterRequest = {
+          email,
+          password: values.password,
+          nickname: values.nickname || undefined,
+        };
         await authService.register(data);
         message.success('注册成功，即将跳转登录页');
         setTimeout(() => navigate('/login', { replace: true }), 1500);
@@ -103,7 +109,7 @@ const RegisterPageContent = () => {
       <Form<RegisterFormValues>
         form={form}
         layout="vertical"
-        initialValues={{ emailDomain: 'gmail.com', captchaVerified: false }}
+        initialValues={{ emailDomain: 'gmail.com', nickname: '', captchaVerified: false }}
         onFinish={onFinish}
         autoComplete="off"
         size="large"
@@ -148,6 +154,25 @@ const RegisterPageContent = () => {
               />
             </Form.Item>
           </Input.Group>
+        </Form.Item>
+
+        {/* 昵称（可选） */}
+        <Form.Item
+          name="nickname"
+          label={<span style={{ color: textColor, fontSize: 14 }}>昵称</span>}
+        >
+          <Input
+            prefix={<UserOutlined />}
+            placeholder="请输入昵称（可选）"
+            allowClear
+            style={{
+              height: 42,
+              borderRadius: 8,
+              background: isDarkMode ? 'var(--color-auth-bg-input-dark)' : '#fff',
+              borderColor: 'var(--color-auth-border)',
+              color: textColor,
+            }}
+          />
         </Form.Item>
 
         {/* 密码 */}

@@ -52,13 +52,13 @@ const WorkspacePage = () => {
     setReport(null);
     setAnalysisChunks("");
     setCurrentStepIndex(0);
-    setOutput(["Starting analysis..."]);
+    setOutput(["开始分析..."]);
 
     const defaultConfig = (JSON.parse(localStorage.getItem("algoviz_configs") || "[]")).find((c: { is_default: boolean }) => c.is_default);
     if (!defaultConfig) {
-      message.error("No default AI config set. Please configure in Settings.");
+      message.error("未设置默认 AI 配置，请在设置中配置。");
       setStreaming(false);
-      setOutput(["Error: No AI model configured."]);
+      setOutput(["错误：未配置 AI 模型。"]);
       return;
     }
 
@@ -69,11 +69,11 @@ const WorkspacePage = () => {
         code
       );
 
-      setOutput((prev) => [...prev, "Project created: " + project.id]);
+      setOutput((prev) => [...prev, "项目已创建: " + project.id]);
 
       const ctrl = analyzeProjectStream(project.id, defaultConfig.id, {
         onStatus: (status, analysisId) => {
-          setOutput((prev) => [...prev, "Status: " + status]);
+          setOutput((prev) => [...prev, "状态: " + status]);
         },
         onTraceStep: (step) => {
           setSteps((prev) => [...prev, step]);
@@ -84,24 +84,24 @@ const WorkspacePage = () => {
         },
         onReportReady: (r) => {
           setReport(r);
-          setOutput((prev) => [...prev, "Analysis complete."]);
+          setOutput((prev) => [...prev, "分析完成。"]);
         },
         onComplete: (analysisId, totalSteps) => {
           setStreaming(false);
-          setOutput((prev) => [...prev, "Done. " + totalSteps + " trace steps."]);
+          setOutput((prev) => [...prev, "完成。共 " + totalSteps + " 步追踪。"]);
         },
         onError: (msg) => {
           setStreaming(false);
-          setOutput((prev) => [...prev, "Error: " + msg]);
-          message.error("Analysis failed: " + msg);
+          setOutput((prev) => [...prev, "错误: " + msg]);
+          message.error("分析失败: " + msg);
         },
       });
       abortRef.current = ctrl;
     } catch (e: unknown) {
       const errMsg = e instanceof Error ? e.message : String(e);
       setStreaming(false);
-      setOutput((prev) => [...prev, "Error: " + errMsg]);
-      message.error("Failed to start analysis: " + errMsg);
+      setOutput((prev) => [...prev, "错误: " + errMsg]);
+      message.error("启动分析失败: " + errMsg);
     }
   }, [streaming, code, language, id]);
 

@@ -100,11 +100,13 @@ export function analyzeProjectStream(
 }
 
 function parseMarkdownReport(md: string): AnalysisReport {
-  const timeMatch = md.match(/(?:Time Complexity|时间复杂度)[:：]\s*\**([^*\n]+)\**/i);
-  const spaceMatch = md.match(/(?:Space Complexity|空间复杂度)[:：]\s*\**([^*\n]+)\**/i);
-  const summary = md.split("\n")[0]?.replace(/^#+\s*/, "").trim() || "Analysis Report";
+  // 纯文本格式解析：从中文标题提取
+  const timeMatch = md.match(/时间复杂度[:：]\s*([^\n]+)/i);
+  const spaceMatch = md.match(/空间复杂度[:：]\s*([^\n]+)/i);
+  const summary = md.split("\n")[0]?.trim() || "分析报告";
 
-  const stepRegex = /(?:Step|步骤)\s*(\d+)[:：]\s*([^\n]+)/gi;
+  // 匹配"步骤 N:" 格式
+  const stepRegex = /(?:步骤|Step)\s*(\d+)[:：]\s*([^\n]+)/gi;
   const steps: { step: number; explanation: string }[] = [];
   let match;
   while ((match = stepRegex.exec(md)) !== null) {
@@ -112,6 +114,7 @@ function parseMarkdownReport(md: string): AnalysisReport {
   }
 
   if (steps.length === 0) {
+    // 退化为逐行展示
     const lines = md.split("\n").filter(l => l.trim());
     lines.forEach((l, i) => {
       steps.push({ step: i, explanation: l.replace(/^[-*#]\s*/, "").trim() });

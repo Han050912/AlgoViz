@@ -17,6 +17,7 @@ from app.services.config_service import ConfigService
 router = APIRouter(prefix="/analyses", tags=["Analyses"])
 
 
+# Generate event strings in SSE format
 async def _sse_event(event: str, data: dict) -> str:
     return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
 

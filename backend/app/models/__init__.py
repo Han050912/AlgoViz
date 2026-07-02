@@ -5,6 +5,7 @@ from app.models.project import Project
 from app.models.analysis import Analysis, AnalysisStatus
 from app.models.analysis_report import AnalysisReport
 from app.models.execution_trace import ExecutionTrace
+from app.models.verification_code import VerificationCode
 
 __all__ = [
     "Base",
@@ -15,4 +16,5 @@ __all__ = [
     "AnalysisStatus",
     "AnalysisReport",
     "ExecutionTrace",
+    "VerificationCode",
 ]

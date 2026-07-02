@@ -5,27 +5,29 @@ import json
 from typing import AsyncIterator
 from openai import AsyncOpenAI
 
-ANALYSIS_SYSTEM_PROMPT = """You are an algorithm analysis expert. Analyze the given code and produce a structured Markdown report with these sections:
+ANALYSIS_SYSTEM_PROMPT = """你是一个算法分析专家。请分析给定代码，直接输出纯文本分析报告，不要使用 Markdown 格式（不加粗、不加标题符号、不使用代码块）。
 
-## 1. Algorithm Overview
-- Identify the algorithm(s) used in the code.
-- Describe the core logic in plain language.
+报告应包含以下内容：
 
-## 2. Complexity Analysis
-- **Time Complexity**: Give the Big-O notation with a brief derivation.
-- **Space Complexity**: Give the Big-O notation with reasoning.
+1. 算法概述
+- 识别代码中使用的算法
+- 用通俗语言描述核心逻辑
 
-## 3. Step-by-step Execution Walkthrough
-- Walk through the algorithm with a concrete small example.
-- Show how variables change at each step.
+2. 复杂度分析
+- 时间复杂度：给出 Big-O 表示法及简要推导
+- 空间复杂度：给出 Big-O 表示法及推理过程
 
-## 4. Strengths & Weaknesses
-- List pros and cons of this approach.
+3. 逐步执行演示
+- 用一个具体小例子 walkthrough 算法执行过程
+- 展示每个步骤中变量的变化
 
-## 5. Optimization Suggestions
-- Suggest at least one practical improvement if applicable.
+4. 优缺点分析
+- 列出该方法的优点和不足
 
-Keep the report concise, accurate, and in proper Markdown."""
+5. 优化建议
+- 如有可行的改进方案，至少提出一条实用建议
+
+要求：简洁准确，使用中文输出，不要使用任何 Markdown 语法。"""
 
 TRACE_SYSTEM_PROMPT = """You are a code execution simulator. Given source code in {language}, simulate the execution step by step
 and produce a JSON object with the following structure:
@@ -57,7 +59,7 @@ class AIService:
         self.model = model_name
 
     async def analyze_code_stream(self, code: str, language: str) -> AsyncIterator[str]:
-        """Stream the Markdown analysis report chunk by chunk."""
+        """Stream the plain-text analysis report chunk by chunk."""
         stream = await self.client.chat.completions.create(
             model=self.model,
             messages=[

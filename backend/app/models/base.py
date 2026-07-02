@@ -1,4 +1,4 @@
-"""SQLAlchemy declarative base."""
+"""SQLAlchemy declarative base with Mapped[] support."""
 from sqlalchemy.orm import DeclarativeBase
 
 

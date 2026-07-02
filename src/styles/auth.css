@@ -182,6 +182,7 @@
 [data-theme='light'] .ant-input-group-compact .ant-select .ant-select-selector {
   background-color: #ffffff !important;
   border-color: var(--color-auth-border) !important;
+  color: var(--color-auth-text-primary) !important;
 }
 
 /* 深色模式：输入框深灰背景 */

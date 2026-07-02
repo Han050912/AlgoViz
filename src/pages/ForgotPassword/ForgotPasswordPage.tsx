@@ -86,10 +86,8 @@ const ForgotPasswordPageContent = () => {
         setTimeout(() => navigate('/login', { replace: true }), 1500);
       } catch (err: any) {
         const status = err?.response?.status;
-        if (status === 401) {
-          message.error('验证码无效或已过期');
-        } else if (status === 400) {
-          message.error(err?.response?.data?.message || '请求有误');
+        if (status === 400) {
+          message.error(err?.response?.data?.detail || '验证码无效或已过期');
         } else if (status && status >= 500) {
           message.error('服务器错误，请稍后重试');
         } else if (err?.code === 'ERR_NETWORK') {
