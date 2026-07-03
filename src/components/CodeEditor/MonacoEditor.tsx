@@ -5,6 +5,7 @@ import { useTheme } from "@/hooks/ThemeContext";
 import type { MonacoEditorProps } from "./types";
 import * as monaco from "monaco-editor";
 import { providePythonDiagnostics } from "./pythonDiagnostics";
+import { diagnosticProviders } from "./langDiagnostics";
 
 // ─── Monaco loader config ────────────────────────────────
 loader.config({
@@ -212,15 +213,24 @@ function setupRealtimeDiagnostics(
   // 清除旧标记
   monacoInstance.editor.setModelMarkers(model, "_owner", []);
 
-  if (language !== "python") return;
-
   // 防抖定时器
   let timer: ReturnType<typeof setTimeout> | null = null;
 
   const scheduleDiagnostics = () => {
     if (timer) clearTimeout(timer);
     timer = setTimeout(() => {
-      const diagnostics = providePythonDiagnostics(model.uri, model);
+      let diagnostics: monaco.editor.IMarkerData[] = [];
+
+      // Python 专用诊断
+      if (language === "python") {
+        diagnostics = providePythonDiagnostics(model.uri, model);
+      }
+      // C++/Java/Go/Rust 通用诊断
+      else if (language in diagnosticProviders) {
+        diagnostics = diagnosticProviders[language](model.uri, model);
+      }
+      // JS/TS 使用 Monaco 内置的 TypeScript 语言服务诊断（自动生效）
+
       monacoInstance.editor.setModelMarkers(model, "_owner", diagnostics);
       timer = null;
     }, 300);
@@ -330,13 +340,16 @@ const MonacoEditorComponent = ({
     const model = editorRef.current.getModel();
     if (!model) return;
 
-    // 如果语言是 python，触发诊断
+    let diag: monaco.editor.IMarkerData[] = [];
+
     if (language === "python") {
-      const diag = providePythonDiagnostics(model.uri, model);
-      monacoRef.current.editor.setModelMarkers(model, "_owner", diag);
-    } else {
-      monacoRef.current.editor.setModelMarkers(model, "_owner", []);
+      diag = providePythonDiagnostics(model.uri, model);
+    } else if (language in diagnosticProviders) {
+      diag = diagnosticProviders[language](model.uri, model);
     }
+    // JS/TS 依赖 Monaco 内置诊断，无需手动设置
+
+    monacoRef.current.editor.setModelMarkers(model, "_owner", diag);
   }, [code, language]);
 
   // 组件卸载时清理
