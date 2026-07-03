@@ -1,7 +1,8 @@
 ﻿import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
-import { darkTheme } from '@/theme/themeConfig';
+import { ThemeProvider, useTheme } from '@/hooks/ThemeContext';
+import { getThemeConfig } from '@/theme/themeConfig';
 import MainLayout from '@/components/Layout/MainLayout';
 import LoginPage from '@/pages/Login/LoginPage';
 import RegisterPage from '@/pages/Register/RegisterPage';
@@ -11,9 +12,10 @@ import HistoryPage from '@/pages/History/HistoryPage';
 import HistoryDetailPage from '@/pages/History/HistoryDetailPage';
 import SettingsPage from '@/pages/Settings/SettingsPage';
 
-function App() {
+function AppContent() {
+  const { theme } = useTheme();
   return (
-    <ConfigProvider theme={darkTheme} locale={zhCN}>
+    <ConfigProvider theme={getThemeConfig(theme)} locale={zhCN}>
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
@@ -30,6 +32,14 @@ function App() {
         </Routes>
       </BrowserRouter>
     </ConfigProvider>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 }
 

@@ -1,12 +1,15 @@
 ﻿import ComplexityBadge from './ComplexityBadge';
+import { useTheme } from '@/hooks/ThemeContext';
 
 interface AnalysisPanelProps {
   report: { time: string; space: string; summary: string; steps: { step: number; explanation: string }[] } | null;
   streaming: boolean;
 }
 
-const AnalysisPanel = ({ report, streaming }: AnalysisPanelProps) => (
-  <div className="p-4 overflow-auto" style={{ background: '#1F2937', borderRadius: 8 }}>
+const AnalysisPanel = ({ report, streaming }: AnalysisPanelProps) => {
+  const { theme } = useTheme();
+  return (
+    <div className="p-4 overflow-auto" style={{ background: theme === 'dark' ? '#1F2937' : '#FFFFFF', borderRadius: 8 }}>
     {streaming && (
       <div className="flex items-center gap-2 mb-4">
         <span className="inline-block rounded-full animate-pulse" style={{ width: 8, height: 8, background: 'var(--color-brand-gold)' }} />
@@ -27,7 +30,7 @@ const AnalysisPanel = ({ report, streaming }: AnalysisPanelProps) => (
         <ComplexityBadge time={report.time} space={report.space} />
         <div className="space-y-3">
           {report.steps.map((s) => (
-            <div key={s.step} className="flex gap-3 p-3 rounded" style={{ background: '#111827' }}>
+            <div key={s.step} className="flex gap-3 p-3 rounded" style={{ background: theme === 'dark' ? '#111827' : '#F9FAFB' }}>
               <span className="flex-shrink-0 flex items-center justify-center rounded-full" style={{ width: 24, height: 24, background: 'var(--color-brand-gold)', color: '#fff', fontSize: 12, fontWeight: 600 }}>{s.step + 1}</span>
               <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>{s.explanation}</p>
             </div>
@@ -36,6 +39,7 @@ const AnalysisPanel = ({ report, streaming }: AnalysisPanelProps) => (
       </>
     )}
   </div>
-);
+  );
+};
 
 export default AnalysisPanel;

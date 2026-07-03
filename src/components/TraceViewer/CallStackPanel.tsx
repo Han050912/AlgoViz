@@ -1,11 +1,14 @@
 ﻿import type { TraceStep } from '@/types/trace';
+import { useTheme } from '@/hooks/ThemeContext';
 
 interface CallStackPanelProps {
   callStack: string[];
 }
 
-const CallStackPanel = ({ callStack }: CallStackPanelProps) => (
-  <div className="p-3 overflow-auto" style={{ background: '#1F2937', borderRadius: 8 }}>
+const CallStackPanel = ({ callStack }: CallStackPanelProps) => {
+  const { theme } = useTheme();
+  return (
+    <div className="p-3 overflow-auto" style={{ background: theme === 'dark' ? '#1F2937' : '#FFFFFF', borderRadius: 8 }}>
     <h4 style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-tertiary)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
       调用栈
     </h4>
@@ -21,7 +24,9 @@ const CallStackPanel = ({ callStack }: CallStackPanelProps) => (
         ))}
       </div>
     )}
-  </div>
-);
+      </div>
+    </div>
+  );
+};
 
 export default CallStackPanel;

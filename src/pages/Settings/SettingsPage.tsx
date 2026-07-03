@@ -1,5 +1,5 @@
 ﻿import { useState, useEffect } from "react";
-import { message, Spin } from "antd";
+import { message, Spin, Modal } from "antd";
 import ConfigCard from "@/components/ApiConfig/ConfigCard";
 import ConfigEmptyState from "@/components/ApiConfig/ConfigEmptyState";
 import ConfigFormModal from "@/components/ApiConfig/ConfigFormModal";
@@ -138,18 +138,30 @@ const SettingsPage = () => {
           writeCache(next);
           return next;
         });
-        message.success("当前 AI 模型接口连通正常");
+        Modal.success({
+          title: "连接成功",
+          content: "当前 AI 模型接口连通正常",
+          okText: "确定",
+        });
       } else {
         setConfigs((prev) => {
           const next = prev.map((c) => (c.id === id ? { ...c, is_connected: false } : c));
           writeCache(next);
           return next;
         });
-        message.error("连接失败：" + result.message);
+        Modal.error({
+          title: "连接失败",
+          content: result.message || "未知错误",
+          okText: "确定",
+        });
       }
     } catch (e: unknown) {
       const errMsg = e instanceof Error ? e.message : String(e);
-      message.error("检测出错：" + errMsg.slice(0, 100));
+      Modal.error({
+        title: "检测出错",
+        content: errMsg.slice(0, 200),
+        okText: "确定",
+      });
     }
     setTestingId(null);
   };

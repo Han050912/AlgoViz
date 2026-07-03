@@ -1,5 +1,6 @@
 ﻿import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
+import { useTheme } from '@/hooks/ThemeContext';
 
 interface DataNode {
   id: string;
@@ -14,6 +15,7 @@ interface DataStructureViewProps {
 
 const DataStructureView = ({ data }: DataStructureViewProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
+  const { theme } = useTheme();
 
   useEffect(() => {
     if (!data || !svgRef.current) return;
@@ -46,7 +48,7 @@ const DataStructureView = ({ data }: DataStructureViewProps) => {
       .selectAll('line')
       .data(links)
       .join('line')
-      .attr('stroke', '#6D28D9')
+      .attr('stroke', theme === 'dark' ? '#6D28D9' : '#7C3AED')
       .attr('stroke-width', 1.5)
       .attr('stroke-opacity', 0.6);
 
@@ -57,7 +59,7 @@ const DataStructureView = ({ data }: DataStructureViewProps) => {
 
     node.append('circle')
       .attr('r', 14)
-      .attr('fill', '#D49A20')
+      .attr('fill', theme === 'dark' ? '#D49A20' : '#B8860B')
       .attr('opacity', 0.85);
 
     node.append('text')
@@ -78,11 +80,11 @@ const DataStructureView = ({ data }: DataStructureViewProps) => {
     });
 
     return () => { simulation.stop(); };
-  }, [data]);
+  }, [data, theme]);
 
   return (
-    <div className="h-full w-full overflow-hidden" style={{ background: '#1F2937', borderRadius: 8 }}>
-      <svg ref={svgRef} width="100%" height="100%" style={{ background: '#030712' }} />
+    <div className="h-full w-full overflow-hidden" style={{ background: 'var(--color-bg-surface)', borderRadius: 8 }}>
+      <svg ref={svgRef} width="100%" height="100%" style={{ background: theme === 'dark' ? '#030712' : '#F3F4F6' }} />
     </div>
   );
 };

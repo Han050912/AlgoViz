@@ -14,7 +14,7 @@ interface ConfigCardProps {
 }
 
 const ConfigCard = ({ config, isDefault, testing, onEdit, onDelete, onTest, onSetDefault, onCancelDefault }: ConfigCardProps) => (
-  <div className="rounded-lg transition-all hover:shadow-lg" style={{ background: "#1F2937", border: isDefault ? "2px solid var(--color-brand-gold)" : "1px solid var(--color-border)", padding: 16 }}>
+  <div className="rounded-lg transition-all hover:shadow-lg" style={{ background: 'var(--color-bg-surface)', border: isDefault ? "2px solid var(--color-brand-gold)" : "1px solid var(--color-border)", padding: 16 }}>
     <div className="flex items-start gap-3">
       {/* 左侧信息区 */}
       <div className="flex-1 min-w-0">

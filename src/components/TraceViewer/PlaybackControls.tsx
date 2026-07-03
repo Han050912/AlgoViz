@@ -20,6 +20,8 @@ interface PlaybackControlsProps {
   onSpeedChange: (speed: number) => void;
 }
 
+import { useTheme } from '@/hooks/ThemeContext';
+
 /**
  * PlaybackControls — 播放控制栏
  * 极简控制，低调度徘徊，不喧宾夺主
@@ -35,14 +37,16 @@ const PlaybackControls = ({
   onStepForward,
   onStepBackward,
   onSpeedChange,
-}: PlaybackControlsProps) => (
-  <div
-    className="flex items-center gap-3 px-4"
-    style={{
-      height: 48,
-      background: '#111827',
-      borderTop: '1px solid var(--color-border)',
-    }}
+}: PlaybackControlsProps) => {
+  const { theme } = useTheme();
+  return (
+    <div
+      className="flex items-center gap-3 px-4"
+      style={{
+        height: 48,
+        background: theme === 'dark' ? '#111827' : '#F9FAFB',
+        borderTop: '1px solid var(--color-border)',
+      }}
   >
     {/* 步退 */}
     <Tooltip title="后退一步">
@@ -108,6 +112,7 @@ const PlaybackControls = ({
     </Tooltip>
     <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)', minWidth: 36 }}>{speed}x</span>
   </div>
-);
+  );
+};
 
 export default PlaybackControls;

@@ -3,6 +3,8 @@
   globals: Record<string, unknown>;
 }
 
+import { useTheme } from '@/hooks/ThemeContext';
+
 const renderValue = (val: unknown): string => {
   if (val === null) return 'null';
   if (val === undefined) return 'undefined';
@@ -10,8 +12,10 @@ const renderValue = (val: unknown): string => {
   return String(val);
 };
 
-const VariableTable = ({ locals, globals }: VariableTableProps) => (
-  <div className="p-3 overflow-auto" style={{ background: '#1F2937', borderRadius: 8 }}>
+const VariableTable = ({ locals, globals }: VariableTableProps) => {
+  const { theme } = useTheme();
+  return (
+    <div className="p-3 overflow-auto" style={{ background: theme === 'dark' ? '#1F2937' : '#FFFFFF', borderRadius: 8 }}>
     <h4 style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-tertiary)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
       变量
     </h4>
@@ -34,6 +38,7 @@ const VariableTable = ({ locals, globals }: VariableTableProps) => (
       </>
     )}
   </div>
-);
+  );
+};
 
 export default VariableTable;

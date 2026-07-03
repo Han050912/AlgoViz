@@ -1,5 +1,5 @@
 ﻿import { useNavigate, useLocation } from "react-router-dom";
-import { Dropdown } from "antd";
+import { Dropdown, Tooltip } from "antd";
 import {
   SettingOutlined,
   HistoryOutlined,
@@ -7,8 +7,12 @@ import {
   UserOutlined,
   LogoutOutlined,
   KeyOutlined,
+  SunOutlined,
+  MoonOutlined,
+  DesktopOutlined,
 } from "@ant-design/icons";
 import Logo from "@/components/common/Logo";
+import { useTheme } from "@/hooks/ThemeContext";
 
 const navItems = [
   { key: "/workspace", label: "\u5de5\u4f5c\u53f0", icon: <CodeOutlined /> },
@@ -19,6 +23,7 @@ const navItems = [
 const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { mode, setMode, theme } = useTheme();
 
   const isActive = (path: string) => location.pathname.startsWith(path);
 
@@ -53,6 +58,34 @@ const Header = () => {
         onClick: handleLogout,
       },
     ],
+  };
+
+  // Theme switcher dropdown
+  const themeItems = [
+    {
+      key: 'light',
+      icon: <SunOutlined />,
+      label: '\u6d45\u8272\u6a21\u5f0f',
+      onClick: () => setMode('light'),
+    },
+    {
+      key: 'dark',
+      icon: <MoonOutlined />,
+      label: '\u6df1\u8272\u6a21\u5f0f',
+      onClick: () => setMode('dark'),
+    },
+    {
+      key: 'system',
+      icon: <DesktopOutlined />,
+      label: '\u8ddf\u968f\u7cfb\u7edf',
+      onClick: () => setMode('system'),
+    },
+  ];
+
+  const themeIcons: Record<string, React.ReactNode> = {
+    light: <SunOutlined />,
+    dark: <MoonOutlined />,
+    system: <DesktopOutlined />,
   };
 
   return (
@@ -98,25 +131,53 @@ const Header = () => {
         </nav>
       </div>
 
-      <Dropdown menu={userMenuItems} placement="bottomRight" trigger={["click"]}>
-        <div
-          className="flex items-center justify-center rounded-full cursor-pointer transition-colors"
-          style={{
-            width: 32,
-            height: 32,
-            border: "1.5px solid var(--color-brand-gold)",
-            color: "var(--color-text-tertiary)",
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.color = "#F9FAFB";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.color = "#9CA3AF";
-          }}
+      <div className="flex items-center gap-4">
+        {/* Theme switcher */}
+        <Dropdown
+          menu={{ items: themeItems }}
+          placement="bottomRight"
+          trigger={["click"]}
         >
-          <UserOutlined style={{ fontSize: 14 }} />
-        </div>
-      </Dropdown>
+          <div
+            className="flex items-center justify-center rounded-full cursor-pointer transition-colors"
+            style={{
+              width: 32,
+              height: 32,
+              border: "1.5px solid var(--color-brand-gold)",
+              color: "var(--color-text-tertiary)",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.color = theme === 'dark' ? "#F9FAFB" : "#111827";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.color = "var(--color-text-tertiary)";
+            }}
+          >
+            {themeIcons[mode]}
+          </div>
+        </Dropdown>
+
+        {/* User avatar */}
+        <Dropdown menu={userMenuItems} placement="bottomRight" trigger={["click"]}>
+          <div
+            className="flex items-center justify-center rounded-full cursor-pointer transition-colors"
+            style={{
+              width: 32,
+              height: 32,
+              border: "1.5px solid var(--color-brand-gold)",
+              color: "var(--color-text-tertiary)",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.color = theme === 'dark' ? "#F9FAFB" : "#111827";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.color = "#9CA3AF";
+            }}
+          >
+            <UserOutlined style={{ fontSize: 14 }} />
+          </div>
+        </Dropdown>
+      </div>
     </header>
   );
 };

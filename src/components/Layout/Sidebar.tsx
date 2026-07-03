@@ -73,7 +73,7 @@ const Sidebar = () => {
       style={{
         width,
         minWidth: width,
-        background: "#111827",
+        background: "var(--color-bg-elevated)",
         borderRight: "1px solid var(--color-border)",
       }}
     >
@@ -90,10 +90,10 @@ const Sidebar = () => {
             cursor: "pointer",
           }}
           onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.color = "#F9FAFB";
+            (e.currentTarget as HTMLElement).style.color = "var(--color-text-primary)";
           }}
           onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.color = "#9CA3AF";
+            (e.currentTarget as HTMLElement).style.color = "var(--color-text-tertiary)";
           }}
         >
           {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}

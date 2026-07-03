@@ -1,6 +1,7 @@
 ﻿import { useState } from "react";
 import Editor, { loader } from "@monaco-editor/react";
 import EditorToolbar from "./EditorToolbar";
+import { useTheme } from "@/hooks/ThemeContext";
 
 interface MonacoEditorProps {
   code: string;
@@ -24,6 +25,7 @@ const MonacoEditor = ({
   onAnalyze,
 }: MonacoEditorProps) => {
   const [activeTemplateKey, setActiveTemplateKey] = useState<string | null>(null);
+  const { theme } = useTheme();
 
   const handleTemplateSelect = (templateCode: string, templateKey: string) => {
     onCodeChange(templateCode);
@@ -36,7 +38,7 @@ const MonacoEditor = ({
   };
 
   return (
-    <div className="flex flex-col h-full overflow-hidden" style={{ background: "#1F2937", borderRadius: 8 }}>
+    <div className="flex flex-col h-full overflow-hidden" style={{ background: "var(--color-bg-surface)", borderRadius: 8 }}>
       <EditorToolbar
         language={language}
         onLanguageChange={onLanguageChange}
@@ -50,7 +52,7 @@ const MonacoEditor = ({
           height="100%"
           language={language}
           value={code}
-          theme="vs-dark"
+          theme={theme === "dark" ? "vs-dark" : "vs-light"}
           onChange={(val) => onCodeChange(val ?? "")}
           options={{
             fontSize: 14,
@@ -77,7 +79,7 @@ const MonacoEditor = ({
 
       <div
         className="flex items-center justify-between px-4"
-        style={{ height: 48, background: "#111827", borderTop: "1px solid var(--color-border)" }}
+        style={{ height: 48, background: "var(--color-bg-elevated)", borderTop: "1px solid var(--color-border)" }}
       >
         <button
           onClick={onAnalyze}

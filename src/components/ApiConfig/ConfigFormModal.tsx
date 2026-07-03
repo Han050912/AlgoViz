@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { EyeOutlined, EyeInvisibleOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import type { ApiConfig } from "@/types/project";
+import { useTheme } from "@/hooks/ThemeContext";
 
 interface ConfigFormModalProps {
   open: boolean;
@@ -23,6 +24,7 @@ const ConfigFormModal = ({ open, editing, decryptedKey, onCancel, onSave }: Conf
   const [form] = Form.useForm();
   const [usePreset, setUsePreset] = useState(false);
   const [showKey, setShowKey] = useState(false);
+  const { theme } = useTheme();
 
   useEffect(() => {
     if (open) {
@@ -58,14 +60,14 @@ const ConfigFormModal = ({ open, editing, decryptedKey, onCancel, onSave }: Conf
       cancelText="\u53d6\u6d88"
       width={520}
       destroyOnClose
-      styles={{ body: { background: "#111827" } }}
+      styles={{ body: { background: theme === 'dark' ? '#111827' : '#F9FAFB' } }}
     >
       {!editing && !usePreset && (
-        <div className="mb-4 p-3 rounded" style={{ background: "#1F2937" }}>
+        <div className="mb-4 p-3 rounded" style={{ background: theme === 'dark' ? '#1F2937' : '#F3F4F6' }}>
           <p className="mb-2" style={{ fontSize: 12, fontWeight: 600, color: "var(--color-text-tertiary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>\u5feb\u901f\u586b\u5145</p>
           <div className="flex flex-wrap gap-2">
             {presets.map((p) => (
-              <button key={p.label} onClick={() => handlePreset(p)} className="px-3 py-1 rounded cursor-pointer" style={{ fontSize: 12, background: "#374151", color: "var(--color-text-secondary)", border: "none", transition: "0.2s" }} onMouseEnter={(e) => {(e.currentTarget as HTMLElement).style.background = "#4B5563"}} onMouseLeave={(e) => {(e.currentTarget as HTMLElement).style.background = "#374151"}}>{p.label}</button>
+              <button key={p.label} onClick={() => handlePreset(p)} className="px-3 py-1 rounded cursor-pointer" style={{ fontSize: 12, background: theme === 'dark' ? "#374151" : "#E5E7EB", color: "var(--color-text-secondary)", border: "none", transition: "0.2s" }} onMouseEnter={(e) => {(e.currentTarget as HTMLElement).style.background = theme === 'dark' ? "#4B5563" : "#D1D5DB"}} onMouseLeave={(e) => {(e.currentTarget as HTMLElement).style.background = theme === 'dark' ? "#374151" : "#E5E7EB"}}>{p.label}</button>
             ))}
           </div>
         </div>
@@ -80,7 +82,7 @@ const ConfigFormModal = ({ open, editing, decryptedKey, onCancel, onSave }: Conf
           }
           rules={[{ required: true, message: "\u8bf7\u8f93\u5165\u914d\u7f6e\u540d\u79f0" }]}
         >
-          <Input placeholder="\u4f8b\u5982\uff1a\u6211\u7684 DeepSeek" style={{ background: "#030712", border: "1px solid #374151", color: "#F9FAFB", borderRadius: 8, height: 40 }} />
+          <Input placeholder="\u4f8b\u5982\uff1a\u6211\u7684 DeepSeek" style={{ background: theme === 'dark' ? '#030712' : '#FFFFFF', border: `1px solid ${theme === 'dark' ? '#374151' : '#D1D5DB'}`, color: theme === 'dark' ? '#F9FAFB' : '#111827', borderRadius: 8, height: 40 }} />
         </Form.Item>
         <Form.Item
           name="base_url"
@@ -91,7 +93,7 @@ const ConfigFormModal = ({ open, editing, decryptedKey, onCancel, onSave }: Conf
           }
           rules={[{ required: true, message: "\u8bf7\u8f93\u5165\u6a21\u578b\u63a5\u53e3\u5730\u5740" }]}
         >
-          <Input placeholder="https://api.deepseek.com/v1" style={{ background: "#030712", border: "1px solid #374151", color: "#F9FAFB", borderRadius: 8, height: 40, fontFamily: "var(--font-mono)" }} />
+          <Input placeholder="https://api.deepseek.com/v1" style={{ background: theme === 'dark' ? '#030712' : '#FFFFFF', border: `1px solid ${theme === 'dark' ? '#374151' : '#D1D5DB'}`, color: theme === 'dark' ? '#F9FAFB' : '#111827', borderRadius: 8, height: 40, fontFamily: "var(--font-mono)" }} />
         </Form.Item>
         <Form.Item
           name="api_key"
@@ -100,12 +102,12 @@ const ConfigFormModal = ({ open, editing, decryptedKey, onCancel, onSave }: Conf
               \u5bc6\u94a5 <Tooltip title="API \u5bc6\u94a5\u5c06\u52a0\u5bc6\u5b58\u50a8\uff0c\u540e\u7aef\u4e0d\u4f1a\u8fd4\u56de\u660e\u6587"><QuestionCircleOutlined style={{ color: "var(--color-text-tertiary)" }} /></Tooltip>
             </span>
           }
-          extra={editing && decryptedKey ? <span style={{ fontSize: 11, color: "#6B7280" }}>\u7559\u7a7a\u5219\u4fdd\u6301\u5f53\u524d\u5bc6\u94a5\u4e0d\u53d8</span> : <span style={{ fontSize: 11, color: "#6B7280" }}>\u8f93\u5165\u60a8\u7684 API \u5bc6\u94a5</span>}
+          extra={editing && decryptedKey ? <span style={{ fontSize: 11, color: theme === 'dark' ? '#6B7280' : '#9CA3AF' }}>\u7559\u7a7a\u5219\u4fdd\u6301\u5f53\u524d\u5bc6\u94a5\u4e0d\u53d8</span> : <span style={{ fontSize: 11, color: theme === 'dark' ? '#6B7280' : '#9CA3AF' }}>\u8f93\u5165\u60a8\u7684 API \u5bc6\u94a5</span>}
         >
           <Input
             placeholder={editing ? "sk-..." : "sk-..."}
             type={showKey ? "text" : "password"}
-            style={{ background: "#030712", border: "1px solid #374151", color: "#F9FAFB", borderRadius: 8, height: 40, fontFamily: "var(--font-mono)" }}
+            style={{ background: theme === 'dark' ? '#030712' : '#FFFFFF', border: `1px solid ${theme === 'dark' ? '#374151' : '#D1D5DB'}`, color: theme === 'dark' ? '#F9FAFB' : '#111827', borderRadius: 8, height: 40, fontFamily: "var(--font-mono)" }}
             suffix={
               <span
                 onClick={() => setShowKey(!showKey)}
@@ -125,7 +127,7 @@ const ConfigFormModal = ({ open, editing, decryptedKey, onCancel, onSave }: Conf
           }
           rules={[{ required: true, message: "\u8bf7\u8f93\u5165\u6a21\u578b\u540d\u79f0" }]}
         >
-          <Input placeholder="deepseek-chat" style={{ background: "#030712", border: "1px solid #374151", color: "#F9FAFB", borderRadius: 8, height: 40 }} />
+          <Input placeholder="deepseek-chat" style={{ background: theme === 'dark' ? '#030712' : '#FFFFFF', border: `1px solid ${theme === 'dark' ? '#374151' : '#D1D5DB'}`, color: theme === 'dark' ? '#F9FAFB' : '#111827', borderRadius: 8, height: 40 }} />
         </Form.Item>
         <Form.Item
           name="is_default"

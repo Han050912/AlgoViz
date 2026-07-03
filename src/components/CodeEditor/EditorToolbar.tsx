@@ -38,7 +38,7 @@ const EditorToolbar = ({
       className="flex items-center gap-3 px-3"
       style={{
         height: 40,
-        background: "#111827",
+        background: "var(--color-bg-elevated)",
         borderBottom: "1px solid var(--color-border)",
       }}
     >
