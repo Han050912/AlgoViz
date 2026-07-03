@@ -12,6 +12,12 @@ const TraceViewerCanvas = ({ currentStep }: Props) => {
   const { theme } = useTheme();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const themeRef = useRef(theme);
+
+  // Keep themeRef in sync so the animation loop always reads the latest value
+  useEffect(() => {
+    themeRef.current = theme;
+  }, [theme]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -28,7 +34,8 @@ const TraceViewerCanvas = ({ currentStep }: Props) => {
     };
 
     const drawGrid = () => {
-      ctx.strokeStyle = theme === 'dark' ? 'rgba(55, 65, 81, 0.3)' : 'rgba(209, 213, 219, 0.5)';
+      const t = themeRef.current;
+      ctx.strokeStyle = t === 'dark' ? 'rgba(55, 65, 81, 0.3)' : 'rgba(209, 213, 219, 0.5)';
       ctx.lineWidth = 0.5;
       const step = 40;
       for (let x = 0; x <= canvas.width; x += step) {
@@ -40,6 +47,7 @@ const TraceViewerCanvas = ({ currentStep }: Props) => {
     };
 
     const drawViz = () => {
+      const t = themeRef.current;
       if (!currentStep || !currentStep.locals) return;
       const keys = [...Object.keys(currentStep.locals), ...Object.keys(currentStep.globals ?? {})];
       if (keys.length === 0) return;
@@ -52,10 +60,10 @@ const TraceViewerCanvas = ({ currentStep }: Props) => {
         const x = cx + r * Math.cos(angle);
         const y = cy + r * Math.sin(angle);
         ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(x, y);
-        ctx.strokeStyle = theme === 'dark' ? 'rgba(109, 40, 217, 0.3)' : 'rgba(109, 40, 217, 0.25)'; ctx.lineWidth = 1; ctx.stroke();
+        ctx.strokeStyle = t === 'dark' ? 'rgba(109, 40, 217, 0.3)' : 'rgba(109, 40, 217, 0.25)'; ctx.lineWidth = 1; ctx.stroke();
         ctx.beginPath(); ctx.arc(x, y, 14, 0, Math.PI * 2);
-        ctx.fillStyle = theme === 'dark' ? 'rgba(212, 154, 32, 0.85)' : 'rgba(212, 154, 32, 0.9)'; ctx.fill();
-        ctx.fillStyle = theme === 'dark' ? '#FFF' : '#111827'; ctx.font = '11px sans-serif';
+        ctx.fillStyle = t === 'dark' ? 'rgba(212, 154, 32, 0.85)' : 'rgba(212, 154, 32, 0.9)'; ctx.fill();
+        ctx.fillStyle = t === 'dark' ? '#FFF' : '#111827'; ctx.font = '11px sans-serif';
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillText(key, x, y + 22);
         const val = currentStep.locals[key] ?? currentStep.globals?.[key];
@@ -66,16 +74,17 @@ const TraceViewerCanvas = ({ currentStep }: Props) => {
 
       ctx.beginPath(); ctx.arc(cx, cy, 18, 0, Math.PI * 2);
       const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 18);
-      grad.addColorStop(0, theme === 'dark' ? 'rgba(109, 40, 217, 0.9)' : 'rgba(109, 40, 217, 0.8)'); grad.addColorStop(1, theme === 'dark' ? 'rgba(109, 40, 217, 0.4)' : 'rgba(109, 40, 217, 0.3)');
+      grad.addColorStop(0, t === 'dark' ? 'rgba(109, 40, 217, 0.9)' : 'rgba(109, 40, 217, 0.8)'); grad.addColorStop(1, t === 'dark' ? 'rgba(109, 40, 217, 0.4)' : 'rgba(109, 40, 217, 0.3)');
       ctx.fillStyle = grad; ctx.fill();
-      ctx.fillStyle = theme === 'dark' ? '#FFF' : '#111827'; ctx.font = 'bold 10px sans-serif';
+      ctx.fillStyle = t === 'dark' ? '#FFF' : '#111827'; ctx.font = 'bold 10px sans-serif';
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText(currentStep.function || 'main', cx, cy);
     };
 
     const render = () => {
-      ctx.fillStyle = theme === 'dark' ? '#030712' : '#F3F4F6'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-      drawGrid(ctx, canvas.width, canvas.height, theme); drawViz(ctx, currentStep, canvas.width, canvas.height, theme);
+      const t = themeRef.current;
+      ctx.fillStyle = t === 'dark' ? '#030712' : '#F3F4F6'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      drawGrid(); drawViz();
       animId = requestAnimationFrame(render);
     };
 

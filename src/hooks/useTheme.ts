@@ -23,7 +23,7 @@ function getSystemTheme(): ComputedTheme {
 /**
  * Listen to system theme changes
  */
-function listenSystemTheme(callback: (theme: ComputedTheme) => void): () => void {
+export function listenSystemTheme(callback: (theme: ComputedTheme) => void): () => void {
   if (typeof window === 'undefined' || !window.matchMedia) return () => {};
   const mql = window.matchMedia('(prefers-color-scheme: dark)');
   const handler = (e: MediaQueryListEvent | MediaQueryList) => {
@@ -41,7 +41,7 @@ function listenSystemTheme(callback: (theme: ComputedTheme) => void): () => void
 /**
  * Persist theme mode to localStorage
  */
-function saveThemeMode(mode: ThemeMode): void {
+export function saveThemeMode(mode: ThemeMode): void {
   try {
     localStorage.setItem(STORAGE_KEY, mode);
   } catch { /* ignore */ }
@@ -50,7 +50,7 @@ function saveThemeMode(mode: ThemeMode): void {
 /**
  * Read persisted theme mode from localStorage
  */
-function loadThemeMode(): ThemeMode {
+export function loadThemeMode(): ThemeMode {
   try {
     return (localStorage.getItem(STORAGE_KEY) as ThemeMode) || 'system';
   } catch {

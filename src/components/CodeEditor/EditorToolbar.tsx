@@ -1,106 +1,90 @@
-﻿import { Select, Button, Upload, Tooltip } from "antd";
-import {
-  CodeOutlined,
-  FileTextOutlined,
-  UploadOutlined,
-} from "@ant-design/icons";
-import { templates, getTemplateCode } from "./templates";
+import { Select, Tooltip } from "antd";
+import { CodeOutlined, FileTextOutlined, UploadOutlined } from "@ant-design/icons";
+import { useState } from "react";
 
 interface EditorToolbarProps {
   language: string;
   onLanguageChange: (lang: string) => void;
-  onTemplateSelect: (code: string, templateKey: string) => void;
   activeTemplateKey: string | null;
+  onTemplateSelect: (code: string, templateKey: string) => void;
   onFileUpload: (code: string) => void;
 }
 
-const languages = ["python", "javascript", "java", "cpp", "go", "rust"];
+const languages = [
+  { value: "python", label: "Python" },
+  { value: "javascript", label: "JavaScript" },
+  { value: "java", label: "Java" },
+  { value: "cpp", label: "C++" },
+  { value: "go", label: "Go" },
+  { value: "rust", label: "Rust" },
+];
 
 const EditorToolbar = ({
   language,
   onLanguageChange,
-  activeTemplateKey,
-  onTemplateSelect,
   onFileUpload,
 }: EditorToolbarProps) => {
-  const handleLanguageChange = (lang: string) => {
-    onLanguageChange(lang);
-    if (activeTemplateKey) {
-      const tpl = templates.find((t) => t.key === activeTemplateKey);
-      if (tpl) {
-        onTemplateSelect(getTemplateCode(tpl, lang), activeTemplateKey);
-      }
-    }
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileUpload = (file: File) => {
+    setUploading(true);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      onFileUpload(e.target?.result as string);
+      setUploading(false);
+    };
+    reader.readAsText(file);
+    return false;
   };
 
   return (
     <div
       className="flex items-center gap-3 px-3"
       style={{
-        height: 40,
+        height: 36,
         background: "var(--color-bg-elevated)",
         borderBottom: "1px solid var(--color-border)",
       }}
     >
       <Select
         value={language}
-        onChange={handleLanguageChange}
-        options={languages.map((l) => ({ value: l, label: l.charAt(0).toUpperCase() + l.slice(1) }))}
-        style={{ width: 130 }}
+        onChange={onLanguageChange}
+        options={languages}
+        style={{ width: 120 }}
         size="small"
-        suffixIcon={<CodeOutlined style={{ color: "var(--color-text-tertiary)" }} />}
-      />
-
-      <Select
-        placeholder={"\u6a21\u677f"}
-        value={activeTemplateKey ?? undefined}
-        onChange={(key) => {
-          const tpl = templates.find((t) => t.key === key);
-          if (tpl) {
-            onLanguageChange(tpl.defaultLanguage);
-            onTemplateSelect(getTemplateCode(tpl, tpl.defaultLanguage), tpl.key);
-          }
-        }}
-        allowClear
-        onClear={() => {
-          onTemplateSelect("", "");
-        }}
-        options={templates.map((t) => ({
-          value: t.key,
-          label: t.label,
-        }))}
-        style={{ width: 150 }}
-        size="small"
-        suffixIcon={<FileTextOutlined style={{ color: "var(--color-text-tertiary)" }} />}
+        suffixIcon={<CodeOutlined style={{ color: "var(--color-text-tertiary)", fontSize: 12 }} />}
       />
 
       <div className="flex-1" />
 
-      <Upload
-        accept=".py,.js,.java,.cpp,.go,.rs,.txt"
-        showUploadList={false}
-        beforeUpload={(file) => {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            onFileUpload(e.target?.result as string);
-            onTemplateSelect("", "");
-          };
-          reader.readAsText(file);
-          return false;
-        }}
-      >
-        <Tooltip title={"\u4e0a\u4f20\u6587\u4ef6"}>
-          <Button
-            size="small"
-            icon={<UploadOutlined />}
-            style={{
-              background: "transparent",
-              border: "1px solid var(--color-border)",
-              color: "var(--color-text-tertiary)",
+      {/* 上传文件 */}
+      <Tooltip title="上传代码文件">
+        <label style={{ cursor: "pointer" }}>
+          <input
+            type="file"
+            accept=".py,.js,.java,.cpp,.go,.rs,.txt"
+            style={{ display: "none" }}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleFileUpload(file);
             }}
           />
-        </Tooltip>
-      </Upload>
+          <span
+            className="flex items-center gap-1 px-2 py-1 rounded transition-colors"
+            style={{
+              fontSize: 12,
+              color: "var(--color-text-tertiary)",
+              background: uploading ? "rgba(212,154,32,0.1)" : "transparent",
+              border: "1px solid var(--color-border)",
+              borderRadius: 4,
+              cursor: "pointer",
+            }}
+          >
+            <UploadOutlined style={{ fontSize: 12 }} />
+            {uploading ? "上传中..." : "上传"}
+          </span>
+        </label>
+      </Tooltip>
     </div>
   );
 };
