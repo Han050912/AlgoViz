@@ -6,7 +6,10 @@ const presets = [
   { label: 'Ollama (Local)', baseUrl: 'http://localhost:11434/v1', model: 'llama3', desc: '完全本地，零成本' },
 ];
 
-interface ConfigEmptyStateProps { onAdd: () => void; onPresetSelect: (preset: typeof presets[0]) => void; }
+interface ConfigEmptyStateProps {
+  onAdd: () => void;
+  onPresetSelect: (preset: typeof presets[0]) => void;
+}
 
 const ConfigEmptyState = ({ onAdd, onPresetSelect }: ConfigEmptyStateProps) => (
   <div className="flex flex-col items-center justify-center py-16 px-4 text-center">

@@ -1,9 +1,11 @@
 """API config CRUD endpoints + test connection + set default."""
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import update
 from app.core.database import get_db
 from app.api.deps import get_current_user
 from app.models.user import User
+from app.models.api_config import ApiConfig
 from app.services.config_service import ConfigService
 from app.schemas.config import ConfigCreate, ConfigUpdate, ConfigOut, ConfigTestResult
 from app.schemas.common import APIResponse
@@ -133,3 +135,26 @@ async def set_default_config(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="配置不存在")
     config = await svc.set_default(config, str(current_user.id))
     return APIResponse(code=200, message="已设为默认配置", data=ConfigOut.model_validate(config))
+
+
+@router.put("/{config_id}/unset-default", response_model=APIResponse[ConfigOut])
+async def unset_default_config(
+    config_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    svc = ConfigService(db)
+    config = await svc.get_config(config_id, str(current_user.id))
+    if config is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="配置不存在")
+    if not config.is_default:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="该配置不是默认配置")
+    # 取消默认
+    await db.execute(
+        update(ApiConfig)
+        .where(ApiConfig.id == config_id, ApiConfig.user_id == current_user.id)
+        .values(is_default=False)
+    )
+    await db.commit()
+    await db.refresh(config)
+    return APIResponse(code=200, message="已取消默认配置", data=ConfigOut.model_validate(config))

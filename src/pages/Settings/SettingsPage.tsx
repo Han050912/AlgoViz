@@ -10,6 +10,7 @@ import {
   deleteConfig,
   testConfigConnection,
   setDefaultConfig,
+  unsetDefaultConfig,
 } from "@/services/configApi";
 import type { ApiConfig } from "@/types/project";
 
@@ -137,17 +138,18 @@ const SettingsPage = () => {
           writeCache(next);
           return next;
         });
-        message.success("Connection OK");
+        message.success("当前 AI 模型接口连通正常");
       } else {
         setConfigs((prev) => {
           const next = prev.map((c) => (c.id === id ? { ...c, is_connected: false } : c));
           writeCache(next);
           return next;
         });
-        message.error("Connection failed: " + result.message);
+        message.error("连接失败：" + result.message);
       }
     } catch (e: unknown) {
-      message.error("Test error: " + ((e instanceof Error ? e.message : String(e)).slice(0, 50)));
+      const errMsg = e instanceof Error ? e.message : String(e);
+      message.error("检测出错：" + errMsg.slice(0, 100));
     }
     setTestingId(null);
   };
@@ -161,6 +163,20 @@ const SettingsPage = () => {
         return next;
       });
       message.success("\u9ed8\u8ba4\u914d\u7f6e\u5df2\u66f4\u65b0");
+    } catch (e: unknown) {
+      message.error((e instanceof Error ? e.message : String(e)).slice(0, 50));
+    }
+  };
+
+  const handleCancelDefault = async (id: string) => {
+    try {
+      await unsetDefaultConfig(id);
+      setConfigs((prev) => {
+        const next = prev.map((c) => (c.id === id ? { ...c, is_default: false } : c));
+        writeCache(next);
+        return next;
+      });
+      message.success("\u5df2\u53d6\u6d88\u9ed8\u8ba4\u914d\u7f6e");
     } catch (e: unknown) {
       message.error((e instanceof Error ? e.message : String(e)).slice(0, 50));
     }
@@ -205,7 +221,7 @@ const SettingsPage = () => {
             <div className="space-y-3">
               {configs.map((config) => (
                 <ConfigCard key={config.id} config={config} isDefault={config.id === defaultConfig?.id} testing={testingId === config.id}
-                  onEdit={handleEdit} onDelete={handleDelete} onTest={handleTest} onSetDefault={handleSetDefault} />
+                  onEdit={handleEdit} onDelete={handleDelete} onTest={handleTest} onSetDefault={handleSetDefault} onCancelDefault={handleCancelDefault} />
               ))}
             </div>
           )}

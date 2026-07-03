@@ -79,3 +79,9 @@ export async function setDefaultConfig(configId: string): Promise<ApiConfig> {
   const { data } = await api.put<APIResponseWrapper<ConfigOutRaw>>('/configs/' + configId + '/default');
   return toApiConfig(data.data);
 }
+
+// 取消默认
+export async function unsetDefaultConfig(configId: string): Promise<ApiConfig> {
+  const { data } = await api.put<APIResponseWrapper<ConfigOutRaw>>('/configs/' + configId + '/unset-default');
+  return toApiConfig(data.data);
+}
