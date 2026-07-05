@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { message, Modal } from "antd";
+import StarButton from "@/components/StarButton/StarButton";
 import MonacoEditor from "@/components/CodeEditor/MonacoEditor";
 import TraceViewerCanvas from "@/components/TraceViewer/TraceViewerCanvas";
 import PlaybackControls from "@/components/TraceViewer/PlaybackControls";
@@ -70,7 +71,7 @@ const WorkspacePage = () => {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
-  const [output, setOutput] = useState<string[]>(["Ready to analyze..."]);
+  const [output, setOutput] = useState<string[]>(["准备分析..."]);
   const [report, setReport] = useState<AnalysisReport | null>(null);
   const [streaming, setStreaming] = useState(false);
   const [analysisChunks, setAnalysisChunks] = useState("");
@@ -225,6 +226,7 @@ const WorkspacePage = () => {
             onResetCode={handleResetCode}
             onRun={handleRun}
             isRunning={isRunning}
+            projectId={id}
           />
         </div>
       </div>

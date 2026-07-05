@@ -52,7 +52,7 @@ export const darkTheme: ThemeConfig = {
       colorText: '#F9FAFB',
       colorBorder: '#374151',
       headerBg: '#1F2937',
-      bodyBg: '#1F2937',
+      contentBg: '#1F2937',
     },
     Tag: { borderRadiusSM: 4 },
     Segmented: {
@@ -129,7 +129,7 @@ export const lightTheme: ThemeConfig = {
       colorText: '#111827',
       colorBorder: '#E5E7EB',
       headerBg: '#FFFFFF',
-      bodyBg: '#FFFFFF',
+      contentBg: '#FFFFFF',
     },
     Tag: { borderRadiusSM: 4 },
     Segmented: {

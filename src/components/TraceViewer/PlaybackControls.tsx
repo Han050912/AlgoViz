@@ -6,6 +6,7 @@ import {
   StepForwardOutlined,
   FastForwardOutlined,
 } from '@ant-design/icons';
+import { useRef, useCallback } from 'react';
 
 interface PlaybackControlsProps {
   currentStep: number;
@@ -18,6 +19,7 @@ interface PlaybackControlsProps {
   onStepForward: () => void;
   onStepBackward: () => void;
   onSpeedChange: (speed: number) => void;
+  disabled?: boolean;
 }
 
 import { useTheme } from '@/hooks/ThemeContext';
@@ -37,8 +39,42 @@ const PlaybackControls = ({
   onStepForward,
   onStepBackward,
   onSpeedChange,
+  disabled,
 }: PlaybackControlsProps) => {
   const { theme } = useTheme();
+  // 每个按钮独立防抖，互不干扰
+  const playDebounceRef = useRef(false);
+  const forwardDebounceRef = useRef(false);
+  const backwardDebounceRef = useRef(false);
+
+  const debouncedPlay = useCallback(() => {
+    if (playDebounceRef.current) return;
+    playDebounceRef.current = true;
+    setTimeout(() => { playDebounceRef.current = false; }, 300);
+    onPlay();
+  }, [onPlay]);
+
+  const debouncedPause = useCallback(() => {
+    if (playDebounceRef.current) return;
+    playDebounceRef.current = true;
+    setTimeout(() => { playDebounceRef.current = false; }, 300);
+    onPause();
+  }, [onPause]);
+
+  const debouncedStepForward = useCallback(() => {
+    if (forwardDebounceRef.current) return;
+    forwardDebounceRef.current = true;
+    setTimeout(() => { forwardDebounceRef.current = false; }, 300);
+    onStepForward();
+  }, [onStepForward]);
+
+  const debouncedStepBackward = useCallback(() => {
+    if (backwardDebounceRef.current) return;
+    backwardDebounceRef.current = true;
+    setTimeout(() => { backwardDebounceRef.current = false; }, 300);
+    onStepBackward();
+  }, [onStepBackward]);
+
   return (
     <div
       className="flex items-center gap-3 px-4"
@@ -49,36 +85,37 @@ const PlaybackControls = ({
       }}
   >
     {/* 步退 */}
-    <Tooltip title="后退一步">
+    <Tooltip title={disabled ? "暂无数据" : "后退一步"}>
       <Button
         size="small"
         type="text"
         icon={<StepBackwardOutlined />}
-        onClick={onStepBackward}
-        disabled={currentStep <= 0}
+        onClick={debouncedStepBackward}
+        disabled={disabled || currentStep <= 0}
         style={{ color: 'var(--color-text-tertiary)' }}
       />
     </Tooltip>
 
     {/* 播放/暂停 */}
-    <Tooltip title={isPlaying ? '暂停' : '播放'}>
+    <Tooltip title={disabled ? "暂无数据" : (isPlaying ? '暂停' : '播放')}>
       <Button
         size="small"
         type="text"
         icon={isPlaying ? <PauseOutlined /> : <CaretRightOutlined />}
-        onClick={isPlaying ? onPause : onPlay}
-        style={{ color: 'var(--color-brand-gold)' }}
+        onClick={isPlaying ? debouncedPause : debouncedPlay}
+        disabled={disabled}
+        style={{ color: disabled ? 'var(--color-text-disabled)' : 'var(--color-brand-gold)' }}
       />
     </Tooltip>
 
     {/* 步进 */}
-    <Tooltip title="前进一步">
+    <Tooltip title={disabled ? "暂无数据" : "前进一步"}>
       <Button
         size="small"
         type="text"
         icon={<StepForwardOutlined />}
-        onClick={onStepForward}
-        disabled={currentStep >= totalSteps - 1}
+        onClick={debouncedStepForward}
+        disabled={disabled || currentStep >= totalSteps - 1}
         style={{ color: 'var(--color-text-tertiary)' }}
       />
     </Tooltip>
@@ -87,10 +124,11 @@ const PlaybackControls = ({
     <div className="flex items-center gap-2 flex-1">
       <Slider
         min={0}
-        max={totalSteps - 1}
+        max={Math.max(totalSteps - 1, 0)}
         value={currentStep}
         onChange={onStepChange}
         tooltip={{ formatter: (v) => '第 ' + ((v ?? 0) + 1) + ' 步' }}
+        disabled={disabled}
         style={{ flex: 1, margin: 0 }}
       />
       <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)', minWidth: 60, textAlign: 'right' }}>

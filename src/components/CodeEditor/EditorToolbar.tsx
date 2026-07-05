@@ -1,6 +1,7 @@
 import { Select, Tooltip } from "antd";
 import { CodeOutlined, FileTextOutlined, UploadOutlined } from "@ant-design/icons";
 import { useState } from "react";
+import StarButton from "@/components/StarButton/StarButton";
 
 interface EditorToolbarProps {
   language: string;
@@ -8,6 +9,7 @@ interface EditorToolbarProps {
   activeTemplateKey: string | null;
   onTemplateSelect: (code: string, templateKey: string) => void;
   onFileUpload: (code: string) => void;
+  projectId?: string;
 }
 
 const languages = [
@@ -23,6 +25,7 @@ const EditorToolbar = ({
   language,
   onLanguageChange,
   onFileUpload,
+  projectId,
 }: EditorToolbarProps) => {
   const [uploading, setUploading] = useState(false);
 
@@ -56,6 +59,9 @@ const EditorToolbar = ({
       />
 
       <div className="flex-1" />
+
+      {/* 收藏 */}
+      {projectId && <StarButton projectId={projectId} />}
 
       {/* 上传文件 */}
       <Tooltip title="上传代码文件">

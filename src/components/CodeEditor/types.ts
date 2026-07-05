@@ -8,4 +8,5 @@ export interface MonacoEditorProps {
   onResetCode?: () => void;
   onRun?: () => void;
   isRunning?: boolean;
+  projectId?: string;
 }

@@ -12,4 +12,10 @@ export default defineConfig({
   css: {
     postcss: "./postcss.config.js",
   },
+  optimizeDeps: {
+    exclude: ["web-tree-sitter"],
+  },
+  worker: {
+    format: "es",
+  },
 });

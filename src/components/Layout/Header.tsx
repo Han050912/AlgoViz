@@ -7,6 +7,7 @@ import {
   UserOutlined,
   LogoutOutlined,
   KeyOutlined,
+  StarOutlined,
   SunOutlined,
   MoonOutlined,
   DesktopOutlined,
@@ -37,6 +38,12 @@ const Header = () => {
 
   const userMenuItems = {
     items: [
+      {
+        key: "favorites",
+        icon: <StarOutlined />,
+        label: "\u6211\u7684\u6536\u85cf",
+        onClick: () => navigate("/favorites"),
+      },
       {
         key: "settings",
         icon: <SettingOutlined />,

@@ -4,8 +4,8 @@ import EditorToolbar from "./EditorToolbar";
 import { useTheme } from "@/hooks/ThemeContext";
 import type { MonacoEditorProps } from "./types";
 import * as monaco from "monaco-editor";
-import { providePythonDiagnostics } from "./pythonDiagnostics";
-import { diagnosticProviders } from "./langDiagnostics";
+import { treesitterDiagnostics, disposeTreeSitter, initTreeSitter } from "@/services/treeSitterDiagnostics";
+import type { MarkerData } from "@/services/treeSitterDiagnostics";
 
 // ─── Monaco loader config ────────────────────────────────
 loader.config({
@@ -92,7 +92,7 @@ function getEditorOptions(theme: "dark" | "light") {
 
     // 颜色装饰器
     colorDecorators: true,
-    colors: [],
+    colors: {},
 
     // 其他
     hideCursorInOverviewRuler: false,
@@ -182,58 +182,41 @@ function registerCustomThemes(monacoInstance: typeof monaco) {
   });
 }
 
-// ─── 诊断提供者注册 ──────────────────────────────────────
-const PYTHON_DIAGNOSTIC_COLLECTION = monaco.editor.createModel(
-  "",
-  "python"
-);
+// ─── Tree-Sitter 实时诊断（防抖 500ms） ────────────────────
+const TREESITTER_MARKER_OWNER = "treesitter";
 
-function registerDiagnosticProviders(monacoInstance: typeof monaco) {
-  // 1. Python 自定义诊断
-  monacoInstance.languages.registerDiagnosticsAdapter("python", {
-    getDiagnostics: () => {
-      return []; // Monaco 内置的 Python 诊断为空，我们手动触发
-    },
-  });
-
-  // 2. JS/TS 内置诊断（通过 TypeScript 语言服务）
-  // Monaco 已自动为 JS/TS 提供类型检查和语法错误
-
-  // 3. 所有语言的括号匹配诊断
-  // Monaco 内置的 bracketMatching 已在编辑器选项中启用
-}
-
-// ─── 实时诊断触发（防抖 300ms） ─────────────────────────
-function setupRealtimeDiagnostics(
+function setupTreeSitterDiagnostics(
   monacoInstance: typeof monaco,
   editor: monaco.editor.IStandaloneCodeEditor,
   language: string,
   model: monaco.editor.ITextModel
-) {
-  // 清除旧标记
-  monacoInstance.editor.setModelMarkers(model, "_owner", []);
+): () => void {
+  // 清除 Tree-Sitter 标记
+  monacoInstance.editor.setModelMarkers(model, TREESITTER_MARKER_OWNER, []);
 
   // 防抖定时器
   let timer: ReturnType<typeof setTimeout> | null = null;
 
-  const scheduleDiagnostics = () => {
+  const scheduleDiagnostics = async () => {
     if (timer) clearTimeout(timer);
-    timer = setTimeout(() => {
-      let diagnostics: monaco.editor.IMarkerData[] = [];
-
-      // Python 专用诊断
-      if (language === "python") {
-        diagnostics = providePythonDiagnostics(model.uri, model);
+    timer = setTimeout(async () => {
+      try {
+        const source = model.getValue();
+        // 空内容直接清空
+        if (!source || source.trim().length === 0) {
+          monacoInstance.editor.setModelMarkers(model, TREESITTER_MARKER_OWNER, []);
+          timer = null;
+          return;
+        }
+        const diagnostics = await treesitterDiagnostics(language, source);
+        monacoInstance.editor.setModelMarkers(model, TREESITTER_MARKER_OWNER, diagnostics);
+        timer = null;
+      } catch {
+        // 解析异常时清空错误，不阻塞页面
+        monacoInstance.editor.setModelMarkers(model, TREESITTER_MARKER_OWNER, []);
+        timer = null;
       }
-      // C++/Java/Go/Rust 通用诊断
-      else if (language in diagnosticProviders) {
-        diagnostics = diagnosticProviders[language](model.uri, model);
-      }
-      // JS/TS 使用 Monaco 内置的 TypeScript 语言服务诊断（自动生效）
-
-      monacoInstance.editor.setModelMarkers(model, "_owner", diagnostics);
-      timer = null;
-    }, 300);
+    }, 500);
   };
 
   // 监听代码变化
@@ -261,6 +244,7 @@ const MonacoEditorComponent = ({
   onResetCode,
   onRun,
   isRunning,
+  projectId,
 }: MonacoEditorProps) => {
   const { theme } = useTheme();
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
@@ -272,11 +256,11 @@ const MonacoEditorComponent = ({
     editorRef.current = editor;
     monacoRef.current = monacoInstance;
 
+    // 初始化 Tree-Sitter WASM
+    initTreeSitter();
+
     // 注册自定义主题
     registerCustomThemes(monacoInstance);
-
-    // 注册诊断提供者
-    registerDiagnosticProviders(monacoInstance);
 
     // 设置主题
     editor.updateOptions({
@@ -296,21 +280,22 @@ const MonacoEditorComponent = ({
       editor.getAction("editor.action.startFindReplaceAction")?.run();
     });
 
-    // 实时诊断
-    if (editor.getModel()) {
-      disposeDiagRef.current = setupRealtimeDiagnostics(
+    // Tree-Sitter 实时诊断
+    const model = editor.getModel();
+    if (model) {
+      disposeDiagRef.current = setupTreeSitterDiagnostics(
         monacoInstance,
         editor,
         language,
-        editor.getModel()
+        model
       );
     }
   }, [theme, language, onRun]);
 
   // 主题切换时实时更新编辑器主题
-  const editorOptions = useMemo(() => getEditorOptions(theme), [theme]);
+  const editorOptions = useMemo(() => getEditorOptions(theme) as monaco.editor.IStandaloneEditorConstructionOptions, [theme]);
 
-  // 语言切换时重新注册诊断
+  // 语言切换时重新初始化诊断
   useEffect(() => {
     if (!editorRef.current || !monacoRef.current) return;
     const model = editorRef.current.getModel();
@@ -323,34 +308,16 @@ const MonacoEditorComponent = ({
     }
 
     // 清除旧标记
-    monacoRef.current.editor.setModelMarkers(model, "_owner", []);
+    monacoRef.current.editor.setModelMarkers(model, TREESITTER_MARKER_OWNER, []);
 
     // 重新注册诊断
-    disposeDiagRef.current = setupRealtimeDiagnostics(
+    disposeDiagRef.current = setupTreeSitterDiagnostics(
       monacoRef.current,
       editorRef.current,
       language,
       model
     );
   }, [language]);
-
-  // 代码变化时更新诊断
-  useEffect(() => {
-    if (!editorRef.current || !monacoRef.current) return;
-    const model = editorRef.current.getModel();
-    if (!model) return;
-
-    let diag: monaco.editor.IMarkerData[] = [];
-
-    if (language === "python") {
-      diag = providePythonDiagnostics(model.uri, model);
-    } else if (language in diagnosticProviders) {
-      diag = diagnosticProviders[language](model.uri, model);
-    }
-    // JS/TS 依赖 Monaco 内置诊断，无需手动设置
-
-    monacoRef.current.editor.setModelMarkers(model, "_owner", diag);
-  }, [code, language]);
 
   // 组件卸载时清理
   useEffect(() => {
@@ -359,6 +326,8 @@ const MonacoEditorComponent = ({
         disposeDiagRef.current();
         disposeDiagRef.current = null;
       }
+      // 释放 Tree-Sitter 解析器
+      disposeTreeSitter();
     };
   }, []);
 
@@ -371,6 +340,7 @@ const MonacoEditorComponent = ({
         activeTemplateKey={null}
         onTemplateSelect={() => {}}
         onFileUpload={() => {}}
+        projectId={projectId}
       />
 
       {/* 编辑器主体 */}

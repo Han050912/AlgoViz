@@ -11,6 +11,7 @@ import WorkspacePage from '@/pages/Workspace/WorkspacePage';
 import HistoryPage from '@/pages/History/HistoryPage';
 import HistoryDetailPage from '@/pages/History/HistoryDetailPage';
 import SettingsPage from '@/pages/Settings/SettingsPage';
+import FavoritesPage from '@/pages/Favorites/FavoritesPage';
 
 function AppContent() {
   const { theme } = useTheme();
@@ -26,6 +27,7 @@ function AppContent() {
             <Route path="/workspace/:id" element={<WorkspacePage />} />
             <Route path="/history" element={<HistoryPage />} />
             <Route path="/history/:id" element={<HistoryDetailPage />} />
+            <Route path="/favorites" element={<FavoritesPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/login" replace />} />
