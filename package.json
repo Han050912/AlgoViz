@@ -2,6 +2,7 @@
   "name": "algoviz",
   "private": true,
   "version": "1.0.0",
+  "description": "企业级算法代码可视化与分析平台 — 支持多语言实时语法诊断、交互式执行轨迹可视化、AI 代码分析与收藏管理",
   "type": "module",
   "scripts": {
     "dev": "vite",

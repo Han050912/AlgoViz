@@ -6,12 +6,12 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 *.pyc
+*.pyo
 
 # Python virtual environments
 .venv/
 venv/
 ENV/
-
 backend/.venv/
 
 # Python alembic
@@ -22,6 +22,7 @@ backend/alembic/versions/
 node_modules/
 .pnp/
 .pnp.js
+*.tsbuildinfo
 
 # Build output
 dist/
@@ -40,7 +41,10 @@ tsconfig.tsbuildinfo
 *.swp
 *.swo
 *~
+
+# OS
 .DS_Store
+Thumbs.db
 
 # Logs
 *.log
@@ -62,9 +66,6 @@ backend/.env
 # Claude Code
 .claude/
 
-# OS
-Thumbs.db
-
 # Database
 *.db
 *.sqlite
@@ -76,3 +77,11 @@ docker-compose.override.yml
 # Uploads / temporary files
 uploads/
 /tmp/
+
+# Coverage
+coverage/
+*.lcov
+
+# Prettier / ESLint cache
+.eslintcache
+.prettiercache
