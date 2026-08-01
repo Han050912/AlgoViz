@@ -1,5 +1,19 @@
 import Parser from "web-tree-sitter";
 
+// ─── WASM 资源（通过 Vite ?url 导入，构建时产出带 hash 的静态资源） ──
+// 这样在 dev 与生产环境下都能拿到正确的可访问 URL，
+// 不依赖 dev server 对 node_modules 的代理。
+import coreWasmUrl from "web-tree-sitter/tree-sitter.wasm?url";
+import pythonWasmUrl from "tree-sitter-wasms/out/tree-sitter-python.wasm?url";
+import javascriptWasmUrl from "tree-sitter-wasms/out/tree-sitter-javascript.wasm?url";
+import typescriptWasmUrl from "tree-sitter-wasms/out/tree-sitter-typescript.wasm?url";
+import tsxWasmUrl from "tree-sitter-wasms/out/tree-sitter-tsx.wasm?url";
+import javaWasmUrl from "tree-sitter-wasms/out/tree-sitter-java.wasm?url";
+import cppWasmUrl from "tree-sitter-wasms/out/tree-sitter-cpp.wasm?url";
+import goWasmUrl from "tree-sitter-wasms/out/tree-sitter-go.wasm?url";
+import rustWasmUrl from "tree-sitter-wasms/out/tree-sitter-rust.wasm?url";
+import cWasmUrl from "tree-sitter-wasms/out/tree-sitter-c.wasm?url";
+
 // ─── Monaco IMarkerData 轻量接口 ───────────────────────────
 export interface MarkerData {
   severity: number;
@@ -14,18 +28,20 @@ export interface MarkerData {
 let parser: Parser | null = null;
 let languageReady = false;
 let initPromise: Promise<void> | null = null;
+// 当前已加载到 parser 上的语法名（web-tree-sitter 0.20.x 的 Language 不暴露名称，需自行记录）
+let currentGrammar: string | null = null;
 
-// ─── 语言 → 语法文件路径（通过 Vite dev server 代理 node_modules） ──
+// ─── 语言 → 语法文件 URL（由 Vite 在构建时解析为静态资源地址） ──
 const GRAMMAR_WASM_PATHS: Record<string, string> = {
-  python: "/node_modules/tree-sitter-wasms/out/tree-sitter-python.wasm",
-  javascript: "/node_modules/tree-sitter-wasms/out/tree-sitter-javascript.wasm",
-  typescript: "/node_modules/tree-sitter-wasms/out/tree-sitter-typescript.wasm",
-  tsx: "/node_modules/tree-sitter-wasms/out/tree-sitter-tsx.wasm",
-  java: "/node_modules/tree-sitter-wasms/out/tree-sitter-java.wasm",
-  cpp: "/node_modules/tree-sitter-wasms/out/tree-sitter-cpp.wasm",
-  go: "/node_modules/tree-sitter-wasms/out/tree-sitter-go.wasm",
-  rust: "/node_modules/tree-sitter-wasms/out/tree-sitter-rust.wasm",
-  c: "/node_modules/tree-sitter-wasms/out/tree-sitter-c.wasm",
+  python: pythonWasmUrl,
+  javascript: javascriptWasmUrl,
+  typescript: typescriptWasmUrl,
+  tsx: tsxWasmUrl,
+  java: javaWasmUrl,
+  cpp: cppWasmUrl,
+  go: goWasmUrl,
+  rust: rustWasmUrl,
+  c: cWasmUrl,
 };
 
 // Monaco 语言名 → tree-sitter 内部语言名映射
@@ -48,8 +64,8 @@ export async function initTreeSitter(): Promise<void> {
 
   initPromise = (async () => {
     try {
-      // 从 Vite dev server 加载核心 WASM（自动代理到 node_modules）
-      const wasmResp = await fetch("/node_modules/web-tree-sitter/web-tree-sitter.wasm");
+      // 加载核心 WASM（URL 由 Vite 在构建时注入）
+      const wasmResp = await fetch(coreWasmUrl);
       if (!wasmResp.ok) throw new Error(`Core WASM fetch failed: ${wasmResp.status}`);
       const wasmArrayBuffer = await wasmResp.arrayBuffer();
 
@@ -71,8 +87,10 @@ export async function initTreeSitter(): Promise<void> {
 
 // ─── 按语言加载语法（懒加载） ──────────────────────────────
 async function _loadGrammar(internalName: string): Promise<boolean> {
-  if (!parser || !languageReady) return false;
-  if (parser.language?.name === internalName) return true;
+  // 注意：此函数会在 languageReady 置为 true 之前被初始化流程调用，
+  // 因此这里只校验 parser 是否已创建。
+  if (!parser) return false;
+  if (currentGrammar === internalName) return true;
 
   const wasmPath = GRAMMAR_WASM_PATHS[internalName];
   if (!wasmPath) return false;
@@ -83,6 +101,7 @@ async function _loadGrammar(internalName: string): Promise<boolean> {
     const buf = new Uint8Array(await resp.arrayBuffer());
     const language = await Parser.Language.load(buf);
     parser.setLanguage(language);
+    currentGrammar = internalName;
     return true;
   } catch {
     return false;
@@ -95,9 +114,7 @@ async function loadLanguageForLang(langName: string): Promise<boolean> {
   const internalName = LANG_NAME_MAP[langName];
   if (!internalName) return false;
 
-  // 尝试直接匹配（如 "javascript" → "javascript"）
-  if (parser.language?.name === internalName) return true;
-
+  // _loadGrammar 内部已做「是否已加载」的短路判断
   return _loadGrammar(internalName);
 }
 
@@ -193,5 +210,6 @@ export function disposeTreeSitter() {
     parser = null;
   }
   languageReady = false;
+  currentGrammar = null;
   initPromise = null;
 }
