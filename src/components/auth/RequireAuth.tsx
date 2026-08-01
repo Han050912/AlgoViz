@@ -1,6 +1,10 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 
+/**
+ * RequireAuth — 路由守卫组件（P1-8）。
+ * 仅当存在未过期的 access_token 时渲染子路由，否则跳转登录页。
+ */
 function getStoredToken(): string | null {
   return (
     localStorage.getItem('access_token') || sessionStorage.getItem('access_token')
@@ -30,12 +34,14 @@ export default function RequireAuth({ children }: { children: ReactNode }) {
     setAuthorized(valid);
     setReady(true);
     if (!valid) {
+      // 清理无效 token，避免长期滞留
       localStorage.removeItem('access_token');
       sessionStorage.removeItem('access_token');
     }
   }, []);
 
   if (!ready) return null;
+
   if (!authorized) {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
