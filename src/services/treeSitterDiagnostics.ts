@@ -1,4 +1,4 @@
-import { Parser, Language } from "web-tree-sitter";
+import Parser from "web-tree-sitter";
 
 // ─── Monaco IMarkerData 轻量接口 ───────────────────────────
 export interface MarkerData {
@@ -81,7 +81,7 @@ async function _loadGrammar(internalName: string): Promise<boolean> {
     const resp = await fetch(wasmPath);
     if (!resp.ok) return false;
     const buf = new Uint8Array(await resp.arrayBuffer());
-    const language = await Language.load(buf);
+    const language = await Parser.Language.load(buf);
     parser.setLanguage(language);
     return true;
   } catch {
