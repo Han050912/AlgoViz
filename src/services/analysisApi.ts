@@ -1,8 +1,6 @@
 ﻿import api from "./api";
 import type { TraceStep } from "@/types/trace";
 
-const BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1";
-
 interface AnalysisReport {
   time: string;
   space: string;
@@ -31,7 +29,8 @@ export function analyzeProjectStream(
 ): AbortController {
   const abort = new AbortController();
   const token = localStorage.getItem("access_token") || sessionStorage.getItem("access_token");
-  const url = BASE + "/analyses/stream?project_id=" + encodeURIComponent(projectId) + "&api_config_id=" + encodeURIComponent(apiConfigId);
+  const base = api.defaults.baseURL ?? "";
+  const url = base + "/analyses/stream?project_id=" + encodeURIComponent(projectId) + "&api_config_id=" + encodeURIComponent(apiConfigId);
 
   fetch(url, {
     method: "POST",
@@ -40,56 +39,39 @@ export function analyzeProjectStream(
     signal: abort.signal,
   }).then(async (res) => {
     if (!res.ok) {
+      // 401 时尝试用 refresh token 刷新后重试一次
+      if (res.status === 401) {
+        const refreshToken =
+          localStorage.getItem("refresh_token") || sessionStorage.getItem("refresh_token");
+        if (refreshToken) {
+          try {
+            const { data } = await api.post("/auth/refresh", { refresh_token: refreshToken });
+            const store = localStorage.getItem("refresh_token") ? localStorage : sessionStorage;
+            store.setItem("access_token", data.data.access_token);
+            store.setItem("refresh_token", data.data.refresh_token);
+            const newToken = data.data.access_token;
+            const retryRes = await fetch(url, {
+              method: "POST",
+              headers: { Authorization: "Bearer " + newToken, "Content-Type": "application/json" },
+              body: "{}",
+              signal: abort.signal,
+            });
+            if (retryRes.ok) {
+              return streamReader(retryRes, callbacks, abort);
+            }
+          } catch {
+            /* refresh 失败则按原错误上报 */
+          }
+        }
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        sessionStorage.removeItem("access_token");
+        sessionStorage.removeItem("refresh_token");
+      }
       callbacks.onError?.("HTTP " + res.status);
       return;
     }
-    const reader = res.body?.getReader();
-    if (!reader) { callbacks.onError?.("No response body"); return; }
-
-    const decoder = new TextDecoder();
-    let buffer = "";
-    let analysisChunks = "";
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split("\n");
-      buffer = lines.pop() || "";
-
-      let eventType = "";
-      for (const line of lines) {
-        if (line.startsWith("event: ")) {
-          eventType = line.slice(7).trim();
-        } else if (line.startsWith("data: ")) {
-          try {
-            const data = JSON.parse(line.slice(6));
-            switch (eventType) {
-              case "status":
-                callbacks.onStatus?.(data.status, data.analysis_id);
-                break;
-              case "trace":
-                callbacks.onTraceStep?.(data);
-                break;
-              case "analysis":
-                analysisChunks += data.chunk;
-                callbacks.onAnalysisChunk?.(data.chunk);
-                break;
-              case "complete":
-                callbacks.onComplete?.(data.analysis_id, data.total_steps);
-                if (analysisChunks) {
-                  const report = parseMarkdownReport(analysisChunks);
-                  callbacks.onReportReady?.(report);
-                }
-                break;
-              case "error":
-                callbacks.onError?.(data.message);
-                break;
-            }
-          } catch { /* skip malformed SSE data */ }
-        }
-      }
-    }
+    return streamReader(res, callbacks, abort);
   }).catch((err) => {
     if (err.name !== "AbortError") {
       callbacks.onError?.(err.message || String(err));
@@ -97,6 +79,73 @@ export function analyzeProjectStream(
   });
 
   return abort;
+}
+
+// 抽取出的流读取逻辑，供首请求与 refresh 重试共用
+function streamReader(
+  res: Response,
+  callbacks: SSECallbacks,
+  abort: AbortController,
+): Promise<void> {
+  return new Promise<void>((resolve) => {
+    const reader = res.body?.getReader();
+    if (!reader) { callbacks.onError?.("No response body"); resolve(); return; }
+
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let analysisChunks = "";
+
+    (async () => {
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+
+          let eventType = "";
+          for (const line of lines) {
+            if (line.startsWith("event: ")) {
+              eventType = line.slice(7).trim();
+            } else if (line.startsWith("data: ")) {
+              try {
+                const data = JSON.parse(line.slice(6));
+                switch (eventType) {
+                  case "status":
+                    callbacks.onStatus?.(data.status, data.analysis_id);
+                    break;
+                  case "trace":
+                    callbacks.onTraceStep?.(data);
+                    break;
+                  case "analysis":
+                    analysisChunks += data.chunk;
+                    callbacks.onAnalysisChunk?.(data.chunk);
+                    break;
+                  case "complete":
+                    callbacks.onComplete?.(data.analysis_id, data.total_steps);
+                    if (analysisChunks) {
+                      const report = parseMarkdownReport(analysisChunks);
+                      callbacks.onReportReady?.(report);
+                    }
+                    break;
+                  case "error":
+                    callbacks.onError?.(data.message);
+                    break;
+                }
+              } catch { /* skip malformed SSE data */ }
+            }
+          }
+        }
+      } catch (err) {
+        if ((err as Error).name !== "AbortError") {
+          callbacks.onError?.((err as Error).message || String(err));
+        }
+      } finally {
+        resolve();
+      }
+    })();
+  });
 }
 
 function parseMarkdownReport(md: string): AnalysisReport {

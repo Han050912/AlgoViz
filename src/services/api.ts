@@ -1,7 +1,18 @@
 ﻿import axios from 'axios';
 
+// 运行时解析 API 基地址：优先环境变量，其次同源（部署到同域时无需跨域），最后回退 localhost。
+function resolveBaseURL(): string {
+  const env = import.meta.env.VITE_API_BASE_URL;
+  if (env) return env;
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    // 生产环境：前端与后端同域部署，API 走同源 /api/v1
+    return window.location.origin + '/api/v1';
+  }
+  return 'http://localhost:8000/api/v1';
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1',
+  baseURL: resolveBaseURL(),
   timeout: 15000,
   headers: { 'Content-Type': 'application/json' },
 });
@@ -13,9 +24,6 @@ api.interceptors.request.use((config) => {
     sessionStorage.getItem('access_token');
   if (token) {
     config.headers.Authorization = 'Bearer ' + token;
-    console.log('[API REQ] Token attached, first 30 chars:', token.slice(0, 30));
-  } else {
-    console.warn('[API REQ] No token found in localStorage or sessionStorage');
   }
   return config;
 });

@@ -37,9 +37,13 @@ class Settings(BaseSettings):
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
     def parse_cors_origins(cls, v):
+        # 支持 JSON 数组、逗号分隔字符串，或列表
         if isinstance(v, str):
-            import json
-            return json.loads(v)
+            v = v.strip()
+            if v.startswith("["):
+                import json
+                return json.loads(v)
+            return [o.strip() for o in v.split(",") if o.strip()]
         return v
 
     LOG_LEVEL: str = "INFO"

@@ -1,7 +1,6 @@
 ﻿"""
 Dependency injection helpers: database session + current user.
 """
-import traceback
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,7 +19,6 @@ async def get_current_user(
 ) -> User:
     """Extract and validate the current user from JWT Bearer token."""
     if credentials is None:
-        print("[AUTH DEBUG] credentials is None - no Authorization header received")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Missing Authorization header",
@@ -34,20 +32,14 @@ async def get_current_user(
             )
         user_id = payload.get("sub")
     except JWTError as exc:
-        print(f"[AUTH DEBUG] JWTError on token (first 20): {credentials.credentials[:20]}")
-        print(f"  {type(exc).__name__}: {exc}")
-        traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Token rejected: {exc}",
+            detail="Token rejected",
         )
-    except Exception as exc:
-        print(f"[AUTH DEBUG] Unexpected error on token (first 20): {credentials.credentials[:20]}")
-        print(f"  {type(exc).__name__}: {exc}")
-        traceback.print_exc()
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Token error: {exc}",
+            detail="Token error",
         )
 
     result = await db.execute(select(User).where(User.id == user_id))

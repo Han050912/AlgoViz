@@ -4,6 +4,7 @@ import zhCN from 'antd/locale/zh_CN';
 import { ThemeProvider, useTheme } from '@/hooks/ThemeContext';
 import { getThemeConfig } from '@/theme/themeConfig';
 import MainLayout from '@/components/Layout/MainLayout';
+import RequireAuth from '@/components/auth/RequireAuth';
 import LoginPage from '@/pages/Login/LoginPage';
 import RegisterPage from '@/pages/Register/RegisterPage';
 import ForgotPasswordPage from '@/pages/ForgotPassword/ForgotPasswordPage';
@@ -22,7 +23,13 @@ function AppContent() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route element={<MainLayout />}>
+          <Route
+            element={
+              <RequireAuth>
+                <MainLayout />
+              </RequireAuth>
+            }
+          >
             <Route path="/workspace" element={<WorkspacePage />} />
             <Route path="/workspace/:id" element={<WorkspacePage />} />
             <Route path="/history" element={<HistoryPage />} />

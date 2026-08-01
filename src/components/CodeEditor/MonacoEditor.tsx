@@ -8,8 +8,10 @@ import { treesitterDiagnostics, disposeTreeSitter, initTreeSitter } from "@/serv
 import type { MarkerData } from "@/services/treeSitterDiagnostics";
 
 // ─── Monaco loader config ────────────────────────────────
+// 使用 CDN 加载 Monaco 的 worker/资源，避免打包后 /node_modules 路径在生产环境失效。
+const MONACO_CDN = "https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs";
 loader.config({
-  paths: { vs: "/node_modules/monaco-editor/min/vs" },
+  paths: { vs: MONACO_CDN },
 });
 
 // ─── 编辑器选项（LeetCode 风格） ─────────────────────────
